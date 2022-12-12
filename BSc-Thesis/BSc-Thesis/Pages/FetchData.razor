@@ -3,7 +3,9 @@
 <PageTitle>Weather forecast</PageTitle>
 
 @using BSc_Thesis.Data
+@using BSc_Thesis.DataBase.Stores
 @inject WeatherForecastService ForecastService
+@inject ProcessStore ProcessStore
 
 <h1>Weather forecast</h1>
 
@@ -44,5 +46,6 @@ else
     protected override async Task OnInitializedAsync()
     {
         forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+        var forecasts2 = await ProcessStore.GetAllRows();
     }
 }
