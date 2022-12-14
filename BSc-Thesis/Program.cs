@@ -3,8 +3,6 @@ using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
 using BSc_Thesis.Data;
 using BSc_Thesis.DataBase;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -2,6 +2,7 @@
 @using BSc_Thesis.Data
 @using BSc_Thesis.DataBase.Models
 @using BSc_Thesis.DataBase.Stores
+@using Blazorise
 
 <PageTitle>Weather forecast</PageTitle>
 
@@ -14,13 +15,12 @@
 <p>Wpisz coś mądręgo :).</p>
 <p>
     <label>
-        Normal Blazor binding: 
-        <input @bind="InputValue" />
+        <TextEdit Placeholder="Wpisz coś ..." TextChanged="Refresh"/>
     </label>
 </p>
 
 <p role="status">Current string: @InputValue</p>
-<button class="btn btn-primary" @onclick="Refresh">Click me</button>
+@*<button class="btn btn-primary" @onclick="Refresh">Click me</button>*@
 
 @if (processDbs == null)
 {
@@ -83,8 +83,9 @@ else
 
 
 
-    private async void Refresh()
+    private async void Refresh(string value)
     {
+        InputValue = value;
         flag = false;
         try
         {

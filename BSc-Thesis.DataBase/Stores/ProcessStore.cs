@@ -30,17 +30,17 @@ namespace BSc_Thesis.DataBase.Stores
             }
         }
 
-        public async Task<ProcessDb[]> GetProcessLessThenTempValue(double Value)
+        public async Task<ProcessDb[]> GetProcessLessThenTempValue(double value)
         {
             try
             {
                 await using var context = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<S7plcSqlContext>();
 
-                return context.Proces.Where(x => x.Temperatura < Value).ToArray();
+                return context.Proces.Where(x => x.Temperatura < value).ToArray();
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "GetAllRows");
+                _logger.LogError(e, "GetProcessLessThenTempValue");
                 return Array.Empty<ProcessDb>();
 
             }
