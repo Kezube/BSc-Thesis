@@ -35,7 +35,8 @@ else
     <table class="table">
         <thead>
             <tr>
-                @*<th>ID</th>*@
+                <th>ID</th>
+                <th>Prob Date</th>
                 <th>Temp (C)</th>
                 <th>Temp Sheath (C)</th>
                 <th>Glucose (g/l)</th>
@@ -52,15 +53,16 @@ else
             @foreach (var processDb in processDbs)
             {
                 <tr>
-                    @*<td>@processDb.ID</td>*@
+                    <td>@processDb.Id</td>
+                    <td>@processDb.Data</td>
                     <td>@processDb.Temperatura</td>
                     <td>@processDb.TemperaturaOtoczenia</td>
                     <td>@processDb.Glukoza</td>
                     <td>@processDb.Maltoza</td>
                     <td>@processDb.Maltortioza</td>
                     <td>@processDb.Cukier</td>
-                    <td>@processDb.DrozdzeAktywne</td>
-                    <td>@processDb.DrozdzeLatecyjne</td>
+                    <td>@processDb.DrozdzeAktuwne</td>
+                    <td>@processDb.DrozdzeLatacujne</td>
                     <td>@processDb.DrozdzeMartwe</td>
                     <td>@processDb.Etanol</td>
 

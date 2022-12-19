@@ -1,16 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.Collections.Generic;
 
-namespace BSc_Thesis.DataBase.Models;
-public partial class ProcessDb
+namespace ConsoleApp1.Models;
+
+public partial class Proce
 {
-
-    //public long Id { get; set; }
     public int Id { get; set; }
 
-    public DateTime Data { get; set; }
+    public DateTime? Data { get; set; }
 
-    [Column("Temperatura")]
     public double? Temperatura { get; set; }
 
     public double? TemperaturaOtoczenia { get; set; }
@@ -23,9 +21,9 @@ public partial class ProcessDb
 
     public double? Cukier { get; set; }
 
-    public double? DrozdzeMartwe { get; set; }
-
     public double? DrozdzeAktuwne { get; set; }
+
+    public double? DrozdzeMartwe { get; set; }
 
     public double? DrozdzeLatacujne { get; set; }
 

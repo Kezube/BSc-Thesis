@@ -12,6 +12,7 @@ namespace BSc_Thesis.DataBase.Stores
         {
             _logger = logger;
             _serviceScopeFactory = serviceScopeFactory;
+            var x = GetAllRows().Result;
         }
 
         public async Task<ProcessDb[]> GetAllRows()

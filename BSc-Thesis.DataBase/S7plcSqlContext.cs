@@ -17,22 +17,31 @@ public partial class S7plcSqlContext : DbContext
     {
         modelBuilder.Entity<ProcessDb>(entity =>
         {
-            entity.HasNoKey();
-            //entity.Property(x => x.Id);
+            //entity.HasKey(e => e.Id).HasName("PK__Proces__3214EC27B6CA1040");
+
+            //entity.Property(e => e.Id)
+            //    .ValueGeneratedNever()
+            //    .HasColumnName("ID");
+
+            entity.HasKey(x => x.Id);
+            //entity.HasNoKey();
+            // entity.Property(x => x.Id).HasColumnName("ID");
+            entity.Property(x => x.Data);//.HasColumnType("datatime");
             entity.Property(x => x.Temperatura);
             entity.Property(x => x.TemperaturaOtoczenia);
             entity.Property(x => x.Glukoza);
             entity.Property(x => x.Maltoza);
             entity.Property(x => x.Maltortioza);
             entity.Property(x => x.Cukier);
-            entity.Property(x => x.DrozdzeAktywne);
+            entity.Property(x => x.DrozdzeAktuwne);
             entity.Property(x => x.DrozdzeMartwe);
-            entity.Property(x => x.DrozdzeLatecyjne);
+            entity.Property(x => x.DrozdzeLatacujne);
             entity.Property(x => x.Etanol);
-        });
 
+        });
         OnModelCreatingPartial(modelBuilder);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
+
