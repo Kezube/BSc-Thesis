@@ -41,8 +41,8 @@ else
                 <th>Temp Sheath (C)</th>
                 <th>Glucose (g/l)</th>
                 <th>Maltose (g/l)</th>
-                <th>Suger (g/l)</th>
                 <th>Maltotriosis (g/l)</th>
+                <th>Suger (g/l)</th>
                 <th>Yeast Active (g/l)</th>
                 <th>Yeast Lag (g/l)</th>
                 <th>Yeast Dead (g/l)</th>
@@ -53,18 +53,18 @@ else
             @foreach (var processDb in processDbs)
             {
                 <tr>
-                    <td>@processDb.Id</td>
-                    <td>@processDb.Data</td>
-                    <td>@processDb.Temperatura</td>
-                    <td>@processDb.TemperaturaOtoczenia</td>
-                    <td>@processDb.Glukoza</td>
-                    <td>@processDb.Maltoza</td>
-                    <td>@processDb.Maltortioza</td>
-                    <td>@processDb.Cukier</td>
-                    <td>@processDb.DrozdzeAktuwne</td>
-                    <td>@processDb.DrozdzeLatacujne</td>
-                    <td>@processDb.DrozdzeMartwe</td>
-                    <td>@processDb.Etanol</td>
+                    <td>@processDb.ID</td>
+                    <td>@processDb.Date</td>
+                    <td>@processDb.Temperature</td>
+                    <td>@processDb.AmbientTemperature</td>
+                    <td>@processDb.Glucose</td>
+                    <td>@processDb.Maltose</td>
+                    <td>@processDb.Maltotriosis</td>
+                    <td>@processDb.Sugar</td>
+                    <td>@processDb.ActiveYeast</td>
+                    <td>@processDb.LatticeYeast</td>
+                    <td>@processDb.DeadYeast</td>
+                    <td>@processDb.Ethanol</td>
 
                 </tr>
             }

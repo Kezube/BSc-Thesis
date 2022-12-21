@@ -19,18 +19,18 @@ public partial class S7plcSqlContext : DbContext
         {
             
 
-            entity.HasKey(x => x.Id);
-            entity.Property(x => x.Data);//.HasColumnType("datatime");
-            entity.Property(x => x.Temperatura);
-            entity.Property(x => x.TemperaturaOtoczenia);
-            entity.Property(x => x.Glukoza);
-            entity.Property(x => x.Maltoza);
-            entity.Property(x => x.Maltortioza);
-            entity.Property(x => x.Cukier);
-            entity.Property(x => x.DrozdzeAktuwne);
-            entity.Property(x => x.DrozdzeMartwe);
-            entity.Property(x => x.DrozdzeLatacujne);
-            entity.Property(x => x.Etanol);
+            entity.HasKey(x => x.ID);
+            entity.Property(x => x.Date);//.HasColumnType("datatime");
+            entity.Property(x => x.Temperature);
+            entity.Property(x => x.AmbientTemperature);
+            entity.Property(x => x.Glucose);
+            entity.Property(x => x.Maltose);
+            entity.Property(x => x.Maltotriosis);
+            entity.Property(x => x.Sugar);
+            entity.Property(x => x.ActiveYeast);
+            entity.Property(x => x.DeadYeast);
+            entity.Property(x => x.LatticeYeast);
+            entity.Property(x => x.Ethanol);
 
         });
         OnModelCreatingPartial(modelBuilder);
