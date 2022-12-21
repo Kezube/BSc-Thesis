@@ -1,11 +1,14 @@
 ﻿@page "/counter"
-@using Blazorise.Charts
+@inject ProcessStore ProcessStore
+
 
 <PageTitle>Counter</PageTitle>
+
 
 <LineChart @ref="lineChart" TItem="WatcherEvent" Options="@lineChartOptions" />
 @code {
     private LineChart<WatcherEvent> lineChart;
+    private ProcessDb[] processDbs;
 
     LineChartOptions lineChartOptions = new()
     {
@@ -25,9 +28,9 @@
     {
         public string Sector { get; set; }
 
-        public int Count { get; set; }
+        public double Count { get; set; }
 
-        public DateTime Date { get; } = DateTime.Now;
+        public DateTime Date { get; set; }
     }
 
     protected override async Task OnAfterRenderAsync( bool firstRender )
@@ -37,32 +40,66 @@
             isAlreadyInitialised = true;
 
             await lineChart.Clear();
-            await lineChart.AddDataSet( GetLineChartDataset() );
+            await lineChart.AddDataSet( GetLineChartDataset2() );
         }
     }
 
-    private LineChartDataset<WatcherEvent> GetLineChartDataset()
+    //private LineChartDataset<WatcherEvent> GetLineChartDataset()
+    //{
+
+    //    return new()
+    //    {
+    //        Label = "# of randoms",
+    //        //Data = new List<WatcherEvent>
+    //        //{
+    //        //    new WatcherEvent { Sector = "A", Count = 1400 },
+    //        //    new WatcherEvent { Sector = "B", Count = 900 },
+    //        //    new WatcherEvent { Sector = "C", Count = 1800 },
+    //        //    new WatcherEvent { Sector = "D", Count = 1300 },
+    //        //},
+    //        //BackgroundColor = backgroundColors[0], // line chart can only have one color
+    //        BorderColor = borderColors[0],
+    //        Fill = true,
+    //        PointRadius = 3,
+    //        BorderWidth = 1,
+    //        PointBorderColor = Enumerable.Repeat( borderColors.First(), 6 ).ToList(),
+    //        CubicInterpolationMode = "monotone",
+    //    };
+    //}
+
+    private LineChartDataset<WatcherEvent> GetLineChartDataset2()
     {
+        processDbs = ProcessStore.GetAllRows().Result;
+        var dataList = new List<WatcherEvent>();
+        foreach (var processDb in processDbs)
+        {
+            var watcherEvent = new WatcherEvent()
+            {
+                Sector = processDb.Id.ToString(),
+                Count = processDb.DrozdzeMartwe,
+                Date = processDb.Data
+            };
+            dataList.Add(watcherEvent);
+        }
+
+
         return new()
         {
-            Label = "# of randoms",
-            Data = new List<WatcherEvent>
-            {
-                new WatcherEvent { Sector = "A", Count = 1400 },
-                new WatcherEvent { Sector = "B", Count = 900 },
-                new WatcherEvent { Sector = "C", Count = 1800 },
-                new WatcherEvent { Sector = "D", Count = 1300 },
-            },
-            BackgroundColor = backgroundColors[0], // line chart can only have one color
-            BorderColor = borderColors[0],
+            Label = "Cos",
+            Data = dataList,
+            BorderColor = borderColors[1],
             Fill = true,
             PointRadius = 3,
             BorderWidth = 1,
             PointBorderColor = Enumerable.Repeat( borderColors.First(), 6 ).ToList(),
             CubicInterpolationMode = "monotone",
+            
         };
     }
+
+    
 }
+
 
 
 @*

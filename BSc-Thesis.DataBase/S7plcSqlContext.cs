@@ -17,15 +17,9 @@ public partial class S7plcSqlContext : DbContext
     {
         modelBuilder.Entity<ProcessDb>(entity =>
         {
-            //entity.HasKey(e => e.Id).HasName("PK__Proces__3214EC27B6CA1040");
-
-            //entity.Property(e => e.Id)
-            //    .ValueGeneratedNever()
-            //    .HasColumnName("ID");
+            
 
             entity.HasKey(x => x.Id);
-            //entity.HasNoKey();
-            // entity.Property(x => x.Id).HasColumnName("ID");
             entity.Property(x => x.Data);//.HasColumnType("datatime");
             entity.Property(x => x.Temperatura);
             entity.Property(x => x.TemperaturaOtoczenia);

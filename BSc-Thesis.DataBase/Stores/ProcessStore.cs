@@ -46,7 +46,5 @@ namespace BSc_Thesis.DataBase.Stores
 
             }
         }
-
-
     }
 }
