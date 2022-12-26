@@ -20,7 +20,7 @@ public partial class S7plcSqlContext : DbContext
             
 
             entity.HasKey(x => x.ID);
-            entity.Property(x => x.Date);//.HasColumnType("datatime");
+            entity.Property(x => x.Date);
             entity.Property(x => x.Temperature);
             entity.Property(x => x.AmbientTemperature);
             entity.Property(x => x.Glucose);

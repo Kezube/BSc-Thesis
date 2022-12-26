@@ -44,28 +44,7 @@
         }
     }
 
-    //private LineChartDataset<WatcherEvent> GetLineChartDataset()
-    //{
-
-    //    return new()
-    //    {
-    //        Label = "# of randoms",
-    //        //Data = new List<WatcherEvent>
-    //        //{
-    //        //    new WatcherEvent { Sector = "A", Count = 1400 },
-    //        //    new WatcherEvent { Sector = "B", Count = 900 },
-    //        //    new WatcherEvent { Sector = "C", Count = 1800 },
-    //        //    new WatcherEvent { Sector = "D", Count = 1300 },
-    //        //},
-    //        //BackgroundColor = backgroundColors[0], // line chart can only have one color
-    //        BorderColor = borderColors[0],
-    //        Fill = true,
-    //        PointRadius = 3,
-    //        BorderWidth = 1,
-    //        PointBorderColor = Enumerable.Repeat( borderColors.First(), 6 ).ToList(),
-    //        CubicInterpolationMode = "monotone",
-    //    };
-    //}
+    
 
     private LineChartDataset<WatcherEvent> GetLineChartDataset2()
     {
@@ -76,7 +55,7 @@
             var watcherEvent = new WatcherEvent()
             {
                 Sector = processDb.ID.ToString(),
-                Count = processDb.DeadYeast,
+                Count = processDb.Temperature,
                 Date = processDb.Date
             };
             dataList.Add(watcherEvent);
