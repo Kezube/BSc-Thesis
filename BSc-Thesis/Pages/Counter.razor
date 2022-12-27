@@ -1,14 +1,38 @@
 ﻿@page "/counter"
+@using System.Reflection
+@using System.Reflection
 @inject ProcessStore ProcessStore
 
 
 <PageTitle>Counter</PageTitle>
+<SelectList TItem="string"
+            TValue="string"
+            Data="@ColumneNames"
+            TextField="@((item)=>item)"
+            ValueField="@((item)=>item)"
+            DefaultItemText="Filtr" 
+            SelectedValueChanged="OnSelected"/>
+            
+<SelectList TItem="int"
+            TValue="int"
+            Data="@ProcessCout"
+            TextField="@((item)=>item.ToString())"
+            ValueField="@((item)=>item)"
+            DefaultItemText="Nr Procesu" 
+            SelectedValueChanged="OnSelectedID"/>
 
 
 <LineChart @ref="lineChart" TItem="WatcherEvent" Options="@lineChartOptions" />
 @code {
     private LineChart<WatcherEvent> lineChart;
-    private ProcessDb[] processDbs;
+    private ProcessDb[] processList;
+    private static string[] ColumneNames = new string[] { };
+    private string filterSelectedValue;
+    private static int[] ProcessCout = new int[] {1,2,3,4,5};
+    private int selectedID;
+    private List<WatcherEvent> dataList = new List<WatcherEvent>();
+
+    private ProcessDb[] processListFiltered;
 
     LineChartOptions lineChartOptions = new()
     {
@@ -35,33 +59,24 @@
 
     protected override async Task OnAfterRenderAsync( bool firstRender )
     {
-        if ( !isAlreadyInitialised )
-        {
-            isAlreadyInitialised = true;
 
-            await lineChart.Clear();
-            await lineChart.AddDataSet( GetLineChartDataset2() );
-        }
+        await lineChart.Clear();
+        await lineChart.AddDataSet( GetLineChartDataset() );
+
     }
 
-    
-
-    private LineChartDataset<WatcherEvent> GetLineChartDataset2()
+    protected override async Task OnInitializedAsync()
     {
-        processDbs = ProcessStore.GetAllRows().Result;
-        var dataList = new List<WatcherEvent>();
-        foreach (var processDb in processDbs)
-        {
-            var watcherEvent = new WatcherEvent()
-            {
-                Sector = processDb.ID.ToString(),
-                Count = processDb.Temperature,
-                Date = processDb.Date
-            };
-            dataList.Add(watcherEvent);
-        }
+        ColumneNames = GetColumneNames();
+        processList = await ProcessStore.GetAllRows();
+        processListFiltered = processList;
+        await base.OnInitializedAsync();
+    }
 
 
+    private LineChartDataset<WatcherEvent> GetLineChartDataset()
+    {
+        processList = processListFiltered;
         return new()
         {
             Label = "Cos",
@@ -72,67 +87,175 @@
             BorderWidth = 1,
             PointBorderColor = Enumerable.Repeat( borderColors.First(), 6 ).ToList(),
             CubicInterpolationMode = "monotone",
-            
+
         };
     }
 
+    private string[] GetColumneNames()
+    {
+        Type type = typeof(ProcessDb);
+        PropertyInfo[] properties = type.GetProperties();
+        return properties.Select(x => x.Name).ToArray();
+    }
+
+    private async void OnSelectedID(int value)
+    {
+        selectedID = value;
+        processListFiltered = await ProcessStore.GetAllRowsByID(selectedID);
+
+        OnSelected(filterSelectedValue);
+    }
+
+    private async void OnSelected(string value)
+    {
+        filterSelectedValue = value;
+        isAlreadyInitialised = false;
+        switch (filterSelectedValue)
+        {
+            case "Temperature":
+                foreach (var processDb in processListFiltered)
+                {
+                    var watcherEvent = new WatcherEvent()
+                    {
+                        Sector = processDb.ID.ToString(),
+                        Count = processDb.Temperature,
+                        Date = processDb.Date
+                    };
+                    dataList.Add(watcherEvent);
+                }
+                break;
+            case "AmbientTemperature":
+                foreach (var processDb in processListFiltered)
+                {
+                    var watcherEvent = new WatcherEvent()
+                    {
+                        Sector = processDb.ID.ToString(),
+                        Count = processDb.AmbientTemperature,
+                        Date = processDb.Date
+                    };
+                    dataList.Add(watcherEvent);
+                }
+                break;
+            case "Glucose":
+                foreach (var processDb in processListFiltered)
+                {
+                    var watcherEvent = new WatcherEvent()
+                    {
+                        Sector = processDb.ID.ToString(),
+                        Count = processDb.Glucose,
+                        Date = processDb.Date
+                    };
+                    dataList.Add(watcherEvent);
+                }
+                break;
+            case "Maltose":
+                foreach (var processDb in processListFiltered)
+                {
+                    var watcherEvent = new WatcherEvent()
+                    {
+                        Sector = processDb.ID.ToString(),
+                        Count = processDb.Maltose,
+                        Date = processDb.Date
+                    };
+                    dataList.Add(watcherEvent);
+                }
+                break;
+            case "Maltotriosis":
+                foreach (var processDb in processListFiltered)
+                {
+                    var watcherEvent = new WatcherEvent()
+                    {
+                        Sector = processDb.ID.ToString(),
+                        Count = processDb.Maltotriosis,
+                        Date = processDb.Date
+                    };
+                    dataList.Add(watcherEvent);
+                }
+                break;
+            case "Sugar":
+                foreach (var processDb in processListFiltered)
+                {
+                    var watcherEvent = new WatcherEvent()
+                    {
+                        Sector = processDb.ID.ToString(),
+                        Count = processDb.Sugar,
+                        Date = processDb.Date
+                    };
+                    dataList.Add(watcherEvent);
+                }
+                break;
+            case "DeadYeast":
+                foreach (var processDb in processListFiltered)
+                {
+                    var watcherEvent = new WatcherEvent()
+                    {
+                        Sector = processDb.ID.ToString(),
+                        Count = processDb.DeadYeast,
+                        Date = processDb.Date
+                    };
+                    dataList.Add(watcherEvent);
+                }
+                break;
+            case "ActiveYeast":
+                foreach (var processDb in processListFiltered)
+                {
+                    var watcherEvent = new WatcherEvent()
+                    {
+                        Sector = processDb.ID.ToString(),
+                        Count = processDb.ActiveYeast,
+                        Date = processDb.Date
+                    };
+                    dataList.Add(watcherEvent);
+                }
+                break;
+            case "LatticeYeast":
+                foreach (var processDb in processListFiltered)
+                {
+                    var watcherEvent = new WatcherEvent()
+                    {
+                        Sector = processDb.ID.ToString(),
+                        Count = processDb.LatticeYeast,
+                        Date = processDb.Date
+                    };
+                    dataList.Add(watcherEvent);
+                }
+                break;
+            case "Ethanol":
+                foreach (var processDb in processListFiltered)
+                {
+                    var watcherEvent = new WatcherEvent()
+                    {
+                        Sector = processDb.ID.ToString(),
+                        Count = processDb.Ethanol,
+                        Date = processDb.Date
+                    };
+                    dataList.Add(watcherEvent);
+                }
+                break;
+            default:
+                foreach (var processDb in processListFiltered)
+                {
+                    var watcherEvent = new WatcherEvent()
+                    {
+                        Sector = processDb.ID.ToString(),
+                        Count = processDb.Temperature,
+                        Date = processDb.Date
+                    };
+                    dataList.Add(watcherEvent);
+                }
+                break;
+
+        }
+
+        OnAfterRenderAsync(false);
+
+        
+
+
+        
+    }
     
 }
 
 
 
-@*
-<h1>Counter</h1>
-
-<p>
-    <label>
-        Normal Blazor binding: 
-        <input @bind="InputValue" />
-    </label>
-</p>
-
-<p role="status">Current count: @currentCount</p>
-
-<p role="status">Current string: @Convert.ToDouble(InputValue)</p>
-
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
-
-@code {
-    private string? InputValue { get; set; }
-    private int currentCount = 0;
-
-    private void IncrementCount()
-    {
-        currentCount++;
-    }
-}*@
-
-
-@*<SfChart Title="Olympic Medals">
-    <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category"></ChartPrimaryXAxis>
-	
-    <ChartSeriesCollection>
-        <ChartSeries DataSource="@MedalDetails" XName="X" YName="Y" Width="3" Opacity="0.5"
-                     DashArray="5,5" Fill="blue" Type="ChartSeriesType.Line">
-        </ChartSeries>
-    </ChartSeriesCollection>
-</SfChart>
-
-@code {
-     public class ChartData
-    {
-        public string X { get; set; }
-        public double Y { get; set; }
-        public string Color { get; set; }
-    }
-	
-    public List<ChartData> MedalDetails = new List<ChartData>
-	{
-        new ChartData { X= "South Korea", Y= 39.4, Color="red" },
-        new ChartData { X= "India", Y= 61.3, Color="green" },
-        new ChartData { X= "Pakistan", Y= 20.4, Color="#ff0097" },
-        new ChartData { X= "Germany", Y= 65.1, Color="crimson" },
-        new ChartData { X= "Australia", Y= 15.8, Color="blue" },
-        new ChartData { X= "Italy", Y= 29.2, Color="darkorange" },
-    };
-}*@

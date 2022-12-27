@@ -40,7 +40,7 @@ namespace BSc_Thesis.DataBase.Stores
 
                 await using var context = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<S7plcSqlContext>();
 
-                return context.Proces.Where(x => x.ID >= index*100000 && x.Temperature <= (index+1)*100000).ToArray();
+                return context.Proces.Where(x => x.ID >= index*100000 && x.ID <= (index+1)*100000).ToArray();
             }
             catch (Exception e)
             {
