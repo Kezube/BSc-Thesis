@@ -12,23 +12,21 @@ namespace BSc_Thesis.DataBase.Stores
         {
             _logger = logger;
             _serviceScopeFactory = serviceScopeFactory;
-            var x = GetLastRow().Result;
         }
 
-        public async Task<ProcessDb[]> GetLastRow()
+        public async Task<ProcessDb> GetLastRow()
         {
             try
             {
                 _logger.LogInformation("GetAllRows");
 
                 await using var context = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<S7plcSqlContext>();
-
-                return context.Proces.Last().ToArray();
+                return context.Proces.ToArray()[^1];
             }
             catch (Exception e)
             {
                 _logger.LogError(e, "GetAllRows");
-                return Array.Empty<ProcessDb>();
+                return Array.Empty<ProcessDb>()[^1];
 
             }
         }

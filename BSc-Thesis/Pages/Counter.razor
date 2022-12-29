@@ -131,7 +131,7 @@
     {
         selectedID = value;
         processListFiltered = await ProcessStore.GetAllRowsByID(selectedID);
-
+        lineChart.Clear();
         OnSelected(filterSelectedValue);
     }
 

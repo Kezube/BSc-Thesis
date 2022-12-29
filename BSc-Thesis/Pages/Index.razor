@@ -1,10 +1,40 @@
 ﻿@page "/"
+@inject ProcessStore ProcessStore
+
 
 <PageTitle>Index</PageTitle>
+ID:
+<NumericEdit Value="processList.ID" ReadOnly />
+Date:
+<DatePicker TValue="DateTime?" Date="processList.Date" ReadOnly />
+Temperature:
+<NumericEdit Value="processList.Temperature" ReadOnly/>
+Ambient Temperature:
+<NumericEdit Value="processList.AmbientTemperature" ReadOnly/>
+Sugar:
+<NumericEdit Value="processList.Sugar" ReadOnly/>
+Glucose:
+<NumericEdit Value="processList.Glucose" ReadOnly/>
+Maltose:
+<NumericEdit Value="processList.Maltose" ReadOnly/>
+Maltotriosis:
+<NumericEdit Value="processList.Maltotriosis" ReadOnly/>
+Active Yeast:
+<NumericEdit Value="processList.ActiveYeast" ReadOnly/>
+Lattice Yeast:
+<NumericEdit Value="processList.LatticeYeast" ReadOnly/>
+Dead Yeast:
+<NumericEdit Value="processList.DeadYeast" ReadOnly/>
+Ethanol:
+<NumericEdit Value="processList.Ethanol" ReadOnly/>
 
 
 
-Welcome to your new app.
+@code{
+    private ProcessDb processList;
 
-<SurveyPrompt Title="How is Blazor working for you?" />
-
+    protected override async Task OnInitializedAsync()
+    {
+         processList = await ProcessStore.GetLastRow();
+    }
+}
