@@ -1,6 +1,6 @@
 ﻿@page "/counter"
 @using System.Reflection
-@using System.Reflection
+
 @inject ProcessStore ProcessStore
 
 
@@ -21,18 +21,23 @@
             DefaultItemText="Nr Procesu" 
             SelectedValueChanged="OnSelectedID"/>
 
+<Check TValue="bool"  Checked="@chartHoldOn" CheckedChanged="@OnSelectedChartHoldOn">Only One Chart</Check>
+
 
 <LineChart @ref="lineChart" TItem="WatcherEvent" Options="@lineChartOptions" />
 @code {
     private LineChart<WatcherEvent> lineChart;
-    private ProcessDb[] processList;
-    private static string[] ColumneNames = new string[] { };
-    private string filterSelectedValue;
-    private static int[] ProcessCout = new int[] {1,2,3,4,5};
-    private int selectedID;
     private List<WatcherEvent> dataList = new List<WatcherEvent>();
-
+    private ProcessDb[] processList;
     private ProcessDb[] processListFiltered;
+
+    private static string[] ColumneNames = new string[] { };
+    private static int[] ProcessCout = new int[] {1,2,3,4,5};
+
+    private int selectedID;
+    private int ColorID;
+    private string filterSelectedValue;
+    private bool chartHoldOn;
 
     LineChartOptions lineChartOptions = new()
     {
@@ -59,29 +64,52 @@
 
     protected override async Task OnAfterRenderAsync( bool firstRender )
     {
+        if (isAlreadyInitialised = false)
+        {
+            isAlreadyInitialised = true;
+            await lineChart.Clear();
+            await lineChart.AddDataSet( GetLineChartDataset() );
+        }
+    }
 
-        await lineChart.Clear();
+    protected async Task ChartRefresh()
+    {
+        if (chartHoldOn)
+        {
+            await lineChart.Clear();
+            ColorID = 0;
+        }
+
+
         await lineChart.AddDataSet( GetLineChartDataset() );
-
     }
 
     protected override async Task OnInitializedAsync()
     {
+        chartHoldOn = true;
         ColumneNames = GetColumneNames();
         processList = await ProcessStore.GetAllRows();
         processListFiltered = processList;
         await base.OnInitializedAsync();
+
     }
 
 
     private LineChartDataset<WatcherEvent> GetLineChartDataset()
     {
+
         processList = processListFiltered;
+        ColorID++;
+        if(ColorID > 5)
+        {
+            ColorID = 0;
+        }
         return new()
         {
-            Label = "Cos",
+            Label = filterSelectedValue,
             Data = dataList,
-            BorderColor = borderColors[1],
+            BackgroundColor = backgroundColors[ColorID],
+            BorderColor = borderColors[ColorID],
             Fill = true,
             PointRadius = 3,
             BorderWidth = 1,
@@ -95,7 +123,8 @@
     {
         Type type = typeof(ProcessDb);
         PropertyInfo[] properties = type.GetProperties();
-        return properties.Select(x => x.Name).ToArray();
+
+        return properties.Where(x => x.Name != "ID" && x.Name != "Date").Select(x => x.Name).ToArray();
     }
 
     private async void OnSelectedID(int value)
@@ -106,10 +135,20 @@
         OnSelected(filterSelectedValue);
     }
 
+    private async void OnSelectedChartHoldOn(bool value)
+    {
+        chartHoldOn = value;
+    }
+
     private async void OnSelected(string value)
     {
+        if (selectedID < 1)
+        {
+            OnSelectedID(1);
+        }
         filterSelectedValue = value;
-        isAlreadyInitialised = false;
+        dataList.Clear();
+
         switch (filterSelectedValue)
         {
             case "Temperature":
@@ -247,7 +286,8 @@
 
         }
 
-        OnAfterRenderAsync(false);
+        ChartRefresh();
+
 
         
 
