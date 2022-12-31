@@ -3,6 +3,8 @@
 
 
 <PageTitle>Index</PageTitle>
+<p>Elo</p>
+
 ID:
 <NumericEdit Value="processList.ID" ReadOnly />
 Date:
@@ -35,6 +37,27 @@ Ethanol:
 
     protected override async Task OnInitializedAsync()
     {
-         processList = await ProcessStore.GetLastRow();
+        processList = await ProcessStore.GetLastRow();
+        Task.Factory.StartNew(() => AutoRefresh(), TaskCreationOptions.LongRunning);
+    }
+
+    private async Task AutoRefresh()
+    {
+        while (true)
+        { 
+            await Task.Delay(TimeSpan.FromSeconds(1));
+            var currentProcessList = await ProcessStore.GetLastRow();
+
+
+            if (currentProcessList.ID == processList.ID)
+            {
+                continue;
+            }
+
+            processList = currentProcessList;
+            InvokeAsync(StateHasChanged);
+
+        }
+        
     }
 }

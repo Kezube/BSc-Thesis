@@ -1,4 +1,5 @@
-﻿using BSc_Thesis.DataBase.Stores;
+﻿using BSc_Thesis.DataBase.Events;
+using BSc_Thesis.DataBase.Stores;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +14,7 @@ namespace BSc_Thesis.DataBase
             var connectionString = configuration.GetConnectionString("MyConnection");
 
             services.AddSingleton<ProcessStore>();
+            services.AddHostedService<ProcessMonitor>();
             services.AddDbContext<S7plcSqlContext>((sp, options) =>
             {
                 options.UseSqlServer(connectionString);

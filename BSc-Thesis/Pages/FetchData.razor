@@ -1,4 +1,4 @@
-﻿@page "/fetchdata"
+﻿@page "/ProcessDeta"
 @using BSc_Thesis.Data
 @using BSc_Thesis.DataBase.Models
 @using BSc_Thesis.DataBase.Stores
@@ -81,7 +81,7 @@
     private ProcessDb[] processList;
     private ProcessDb[] processListFiltered;
     private static string[] ColumneNames = new string[] { };
-    private static int[] ProcessCout = new int[] {1,2,3,4,5};
+    private static int[] ProcessCout = new int[] { };
     private string filterSelectedValue;
 
     protected override async Task OnInitializedAsync()
@@ -89,7 +89,7 @@
         ColumneNames = GetColumneNames();
         processList = await ProcessStore.GetAllRows();
         processListFiltered = processList;
-        //ProcessCout = GetProcessCout();
+        ProcessCout = GetProcessCout();
         await base.OnInitializedAsync();
     }
 
@@ -98,6 +98,20 @@
         Type type = typeof(ProcessDb);
         PropertyInfo[] properties = type.GetProperties();
         return properties.Select(x => x.Name).ToArray();
+    }
+
+    private int[] GetProcessCout()
+    {
+        var process = ProcessStore.GetLastRow().Result;
+        var cout = process.ID/100000;
+        var couter = new List<int>();
+        for (int i = 1; i <= cout; i++)
+        {
+            couter.Add(i);
+
+        }
+        return couter.ToArray();
+
     }
 
     private async void OnSelectedNumLow(double value)

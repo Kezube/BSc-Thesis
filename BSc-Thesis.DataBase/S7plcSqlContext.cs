@@ -17,8 +17,6 @@ public partial class S7plcSqlContext : DbContext
     {
         modelBuilder.Entity<ProcessDb>(entity =>
         {
-            
-
             entity.HasKey(x => x.ID);
             entity.Property(x => x.Date);
             entity.Property(x => x.Temperature);

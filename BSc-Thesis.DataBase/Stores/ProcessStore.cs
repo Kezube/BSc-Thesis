@@ -1,4 +1,5 @@
 ﻿using BSc_Thesis.DataBase.Models;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -14,18 +15,20 @@ namespace BSc_Thesis.DataBase.Stores
             _serviceScopeFactory = serviceScopeFactory;
         }
 
+        
+
         public async Task<ProcessDb> GetLastRow()
         {
             try
             {
-                _logger.LogInformation("GetAllRows");
+                _logger.LogInformation("GetLastRow");
 
                 await using var context = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<S7plcSqlContext>();
                 return context.Proces.ToArray()[^1];
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "GetAllRows");
+                _logger.LogError(e, "GetLastRow");
                 return Array.Empty<ProcessDb>()[^1];
 
             }
@@ -263,13 +266,6 @@ namespace BSc_Thesis.DataBase.Stores
 
             }
         }
-
-
-
-
-
-
-
 
     }
 }
