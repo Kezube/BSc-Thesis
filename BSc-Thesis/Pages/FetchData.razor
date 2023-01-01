@@ -1,75 +1,69 @@
 ﻿@page "/ProcessDeta"
-@using BSc_Thesis.Data
-@using BSc_Thesis.DataBase.Models
-@using BSc_Thesis.DataBase.Stores
-@using Blazorise
-@using System.Reflection
 
 <PageTitle>Weather forecast</PageTitle>
 
 @inject ProcessStore ProcessStore
 
 
-
 <SelectList TItem="string"
             TValue="string"
             Data="@ColumneNames"
-            TextField="@((item)=>item)"
-            ValueField="@((item)=>item)"
-            DefaultItemText="Filtr" 
+            TextField="@(item => item)"
+            ValueField="@(item => item)"
+            DefaultItemText="Filtr"
             SelectedValueChanged="OnSelected"/>
 
 @if (filterSelectedValue == "ID")
 {
     <SelectList TItem="int"
-            TValue="int"
-            Data="@ProcessCout"
-            TextField="@((item)=>item.ToString())"
-            ValueField="@((item)=>item)"
-            DefaultItemText="Nr Procesu" 
-            SelectedValueChanged="OnSelectedID"/>
+                TValue="int"
+                Data="@ProcessCout"
+                TextField="@(item => item.ToString())"
+                ValueField="@(item => item)"
+                DefaultItemText="Nr Procesu"
+                SelectedValueChanged="OnSelectedID"/>
 }
 
 @if (filterSelectedValue == "Date")
 {
-    <DatePicker TValue="DateTime?" 
-
-        DateChanged="OnSelectedDateFrom"/>
     <DatePicker TValue="DateTime?"
-        DateChanged="OnSelectedDateTo"/>
+
+                DateChanged="OnSelectedDateFrom"/>
+    <DatePicker TValue="DateTime?"
+                DateChanged="OnSelectedDateTo"/>
 }
 
 @if (!(filterSelectedValue == "ID" || filterSelectedValue == "Date" || filterSelectedValue == null))
 {
-    <NumericPicker 
+    <NumericPicker
         TValue="double"
         ModifyValueOnWheel WheelOn="NumericWheelOn.Hover"
         ValueChanged="OnSelectedNumLow"/>
-    <NumericPicker 
+    <NumericPicker
         TValue="double"
         ModifyValueOnWheel WheelOn="NumericWheelOn.Hover"
         ValueChanged="OnSelectedNumHigh"/>
 }
 
 <DataGrid TItem="ProcessDb"
-    Data="processListFiltered"
-    PageSize="30"
-    ShowPager
-    Hoverable>
-    <DataGridCommandColumn />
-    <DataGridColumn Field="@nameof(ProcessDb.ID)" Caption="#" Sortable="false" />
-    <DataGridColumn Field="@nameof(ProcessDb.Date)" Caption="Date" Editable />
-    <DataGridColumn Field="@nameof(ProcessDb.Temperature)" Caption="Temperature" Editable />
-    <DataGridColumn Field="@nameof(ProcessDb.AmbientTemperature)" Caption="Ambient Temperature" Editable />
-    <DataGridColumn Field="@nameof(ProcessDb.Glucose)" Caption="Glucose" Editable />
-    <DataGridColumn Field="@nameof(ProcessDb.Maltose)" Caption="Maltose" Editable />
-    <DataGridColumn Field="@nameof(ProcessDb.Maltotriosis)" Caption="Maltotriosis" Editable />
-    <DataGridColumn Field="@nameof(ProcessDb.Sugar)" Caption="Sugar" Editable />
-    <DataGridColumn Field="@nameof(ProcessDb.ActiveYeast)" Caption="Active Yeast" Editable />
-    <DataGridColumn Field="@nameof(ProcessDb.LatticeYeast)" Caption="Lattice Yeast" Editable />
-    <DataGridColumn Field="@nameof(ProcessDb.DeadYeast)" Caption="Dead Yeast" Editable />
-    <DataGridColumn Field="@nameof(ProcessDb.Ethanol)" Caption="Ethanol Temperature" Editable />
-    </DataGrid>
+          Data="processListFiltered"
+          PageSize="30"
+          ShowPager
+          Hoverable>
+    <DataGridCommandColumn/>
+    <DataGridColumn Field="@nameof(ProcessDb.ID)" Caption="#" Sortable="false"/>
+    <DataGridColumn Field="@nameof(ProcessDb.Date)" Caption="Date" Editable/>
+    <DataGridColumn Field="@nameof(ProcessDb.Temperature)" Caption="Temperature" Editable/>
+    <DataGridColumn Field="@nameof(ProcessDb.AmbientTemperature)" Caption="Ambient Temperature" Editable/>
+    <DataGridColumn Field="@nameof(ProcessDb.Glucose)" Caption="Glucose" Editable/>
+    <DataGridColumn Field="@nameof(ProcessDb.Maltose)" Caption="Maltose" Editable/>
+    <DataGridColumn Field="@nameof(ProcessDb.Maltotriosis)" Caption="Maltotriosis" Editable/>
+    <DataGridColumn Field="@nameof(ProcessDb.Sugar)" Caption="Sugar" Editable/>
+    <DataGridColumn Field="@nameof(ProcessDb.ActiveYeast)" Caption="Active Yeast" Editable/>
+    <DataGridColumn Field="@nameof(ProcessDb.LatticeYeast)" Caption="Lattice Yeast" Editable/>
+    <DataGridColumn Field="@nameof(ProcessDb.DeadYeast)" Caption="Dead Yeast" Editable/>
+    <DataGridColumn Field="@nameof(ProcessDb.Ethanol)" Caption="Ethanol Temperature" Editable/>
+</DataGrid>
 
 
 @code{
@@ -80,8 +74,8 @@
     private int selectedID;
     private ProcessDb[] processList;
     private ProcessDb[] processListFiltered;
-    private static string[] ColumneNames = new string[] { };
-    private static int[] ProcessCout = new int[] { };
+    private static string[] ColumneNames = { };
+    private static int[] ProcessCout = { };
     private string filterSelectedValue;
 
     protected override async Task OnInitializedAsync()
@@ -95,23 +89,19 @@
 
     private string[] GetColumneNames()
     {
-        Type type = typeof(ProcessDb);
-        PropertyInfo[] properties = type.GetProperties();
+        var type = typeof(ProcessDb);
+        var properties = type.GetProperties();
         return properties.Select(x => x.Name).ToArray();
     }
 
     private int[] GetProcessCout()
     {
         var process = ProcessStore.GetLastRow().Result;
-        var cout = process.ID/100000;
+        var cout = process.ID / 100000;
         var couter = new List<int>();
-        for (int i = 1; i <= cout; i++)
-        {
+        for (var i = 1; i <= cout; i++)
             couter.Add(i);
-
-        }
         return couter.ToArray();
-
     }
 
     private async void OnSelectedNumLow(double value)
@@ -122,10 +112,9 @@
             highLimit = lowLimit + 1;
         }
         OnSelected(filterSelectedValue);
-
     }
 
-    private async void OnSelectedNumHigh(double value)
+    private void OnSelectedNumHigh(double value)
     {
         highLimit = value;
         if (lowLimit >= highLimit)
@@ -135,72 +124,52 @@
         OnSelected(filterSelectedValue);
     }
 
-    private async void OnSelectedDateFrom( DateTime? value)
+    private void OnSelectedDateFrom(DateTime? value)
     {
         datePickerFrom = value;
         OnSelected(filterSelectedValue);
     }
 
-    private async void OnSelectedDateTo( DateTime? value)
+    private void OnSelectedDateTo(DateTime? value)
     {
         datePickerTo = value;
         OnSelected(filterSelectedValue);
     }
 
-    private async void OnSelectedID(int value)
+    private void OnSelectedID(int value)
     {
         selectedID = value;
         OnSelected(filterSelectedValue);
     }
 
-    private async void OnSelected(string value)
+    private async Task OnSelected(string value)
     {
         filterSelectedValue = value;
-        switch (filterSelectedValue)
+
+        if (filterSelectedValue == "ID")
         {
-            case "ID":
-                processListFiltered = await ProcessStore.GetAllRowsByID(selectedID);
-                break;
-            case "Date":
-                processListFiltered = await ProcessStore.GetAllRowsByDate(datePickerFrom, datePickerTo);
-                break;
-            case "Temperature":
-                processListFiltered = await ProcessStore.GetAllRowsByTemp(lowLimit, highLimit);
-                break;
-            case "AmbientTemperature":
-                processListFiltered = await ProcessStore.GetAllRowsByAmbinetTemp(lowLimit, highLimit);
-                break;
-            case "Glucose":
-                processListFiltered = await ProcessStore.GetAllRowsByGlucose(lowLimit, highLimit);
-                break;
-            case "Maltose":
-                processListFiltered = await ProcessStore.GetAllRowsByMaltose(lowLimit, highLimit);
-                break;
-            case "Maltotriosis":
-                processListFiltered = await ProcessStore.GetAllRowsByMaltotriosis(lowLimit, highLimit);
-                break;
-            case "Sugar":
-                processListFiltered = await ProcessStore.GetAllRowsBySugar(lowLimit, highLimit);
-                break;
-            case "DeadYeast":
-                processListFiltered = await ProcessStore.GetAllRowsByDeadYeast(lowLimit, highLimit);
-                break;
-            case "ActiveYeast":
-                processListFiltered = await ProcessStore.GetAllRowsByActiveYeast(lowLimit, highLimit);
-                break;
-            case "LatticeYeast":
-                processListFiltered = await ProcessStore.GetAllRowsByLatticeYeast(lowLimit, highLimit);
-                break;
-            case "Ethanol":
-                processListFiltered = await ProcessStore.GetAllRowsByEthanol(lowLimit, highLimit);
-                break;
-            default:
-                processListFiltered = await ProcessStore.GetAllRows();
-                break;
-
+            processListFiltered = await ProcessStore.GetAllRowsByID(selectedID);
+            return;
         }
+
+        var filterRequest = filterSelectedValue switch
+        {
+            "Date" => new ProcessFilterRequest(ProcessFilterOptions.Date, datePickerFrom ?? DateTime.Now, datePickerTo ?? DateTime.Now),
+            "Temperature" => new ProcessFilterRequest(ProcessFilterOptions.Temperature, lowLimit, highLimit),
+            "AmbientTemperature" => new ProcessFilterRequest(ProcessFilterOptions.AmbientTemperature, lowLimit, highLimit),
+            "Glucose" => new ProcessFilterRequest(ProcessFilterOptions.Glucose, lowLimit, highLimit),
+            "Maltose" => new ProcessFilterRequest(ProcessFilterOptions.Maltose, lowLimit, highLimit),
+            "Maltotriosis" => new ProcessFilterRequest(ProcessFilterOptions.Maltotriosis, lowLimit, highLimit),
+            "Sugar" => new ProcessFilterRequest(ProcessFilterOptions.Sugar, lowLimit, highLimit),
+            "DeadYeast" => new ProcessFilterRequest(ProcessFilterOptions.DeadYeast, lowLimit, highLimit),
+            "ActiveYeast" => new ProcessFilterRequest(ProcessFilterOptions.ActiveYeast, lowLimit, highLimit),
+            "LatticeYeast" => new ProcessFilterRequest(ProcessFilterOptions.LatticeYeast, lowLimit, highLimit),
+            "Ethanol" => new ProcessFilterRequest(ProcessFilterOptions.Ethanol, lowLimit, highLimit),
+            _ => throw new ArgumentOutOfRangeException(nameof(filterSelectedValue))
+            };
+
+        if (filterRequest is not null)
+            processListFiltered = await ProcessStore.GetFilteredProcess(filterRequest);
     }
+
 }
-
-   
-

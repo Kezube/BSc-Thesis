@@ -1,271 +1,142 @@
-﻿using BSc_Thesis.DataBase.Models;
-using Microsoft.Data.SqlClient;
+﻿using System.Text.Json;
+using BSc_Thesis.DataBase.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace BSc_Thesis.DataBase.Stores
+namespace BSc_Thesis.DataBase.Stores;
+
+public class ProcessStore
 {
-    public class ProcessStore
+    private readonly ILogger<ProcessStore> _logger;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
+
+    public ProcessStore(ILogger<ProcessStore> logger, IServiceScopeFactory serviceScopeFactory)
     {
-        private readonly ILogger<ProcessStore> _logger;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
-        public ProcessStore(ILogger<ProcessStore> logger, IServiceScopeFactory serviceScopeFactory)
+        _logger = logger;
+        _serviceScopeFactory = serviceScopeFactory;
+    }
+
+
+    public async Task<ProcessDb> GetLastRow()
+    {
+        try
         {
-            _logger = logger;
-            _serviceScopeFactory = serviceScopeFactory;
+            _logger.LogInformation("GetLastRow");
+
+            await using var context = _serviceScopeFactory.CreateScope().ServiceProvider
+                .GetRequiredService<S7plcSqlContext>();
+            return await context.Proces.LastOrDefaultAsync();
         }
-
-        
-
-        public async Task<ProcessDb> GetLastRow()
+        catch (Exception e)
         {
-            try
-            {
-                _logger.LogInformation("GetLastRow");
-
-                await using var context = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<S7plcSqlContext>();
-                return context.Proces.ToArray()[^1];
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "GetLastRow");
-                return Array.Empty<ProcessDb>()[^1];
-
-            }
+            _logger.LogError(e, "GetLastRow");
+            return null;
         }
+    }
 
-        public async Task<ProcessDb[]> GetAllRows()
+    public async Task<ProcessDb[]> GetAllRows()
+    {
+        try
         {
-            try
-            {
-                _logger.LogInformation("GetAllRows");
+            _logger.LogInformation("GetAllRows");
 
-                await using var context = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<S7plcSqlContext>();
+            await using var context = _serviceScopeFactory.CreateScope().ServiceProvider
+                .GetRequiredService<S7plcSqlContext>();
 
-                return context.Proces.ToArray();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "GetAllRows");
-                return Array.Empty<ProcessDb>();
-
-            }
+            return context.Proces.ToArray();
         }
-        public async Task<ProcessDb[]> GetAllRowsByID(int index)
+        catch (Exception e)
         {
-            try
-            {
-                _logger.LogInformation("GetAllRowsByID");
-
-                await using var context = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<S7plcSqlContext>();
-
-                return context.Proces.Where(x => x.ID >= index*100000 && x.ID <= (index+1)*100000).ToArray();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "GetAllRowsByID");
-                return Array.Empty<ProcessDb>();
-
-            }
+            _logger.LogError(e, "GetAllRows");
+            return Array.Empty<ProcessDb>();
         }
+    }
 
-        public async Task<ProcessDb[]> GetAllRowsByDate(DateTime? dateTimeFrom, DateTime? dateTimeTo)
+    public async Task<ProcessDb[]> GetAllRowsByID(int index)
+    {
+        try
         {
-            try
-            {
-                _logger.LogInformation("GetAllRowsByID");
+            _logger.LogInformation("GetAllRowsByID | {Index}", index);
 
-                await using var context = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<S7plcSqlContext>();
+            await using var context = _serviceScopeFactory.CreateScope().ServiceProvider
+                .GetRequiredService<S7plcSqlContext>();
 
-                return context.Proces.Where(x => x.Date >= dateTimeFrom && x.Date <= dateTimeTo).ToArray();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "GetAllRowsByID");
-                return Array.Empty<ProcessDb>();
-
-            }
+            return context.Proces.Where(x => x.ID >= index * 100000 && x.ID <= (index + 1) * 100000).ToArray();
         }
-
-        public async Task<ProcessDb[]> GetAllRowsByTemp(double lowLimit,double highLimit)
+        catch (Exception e)
         {
-            try
-            {
-                _logger.LogInformation("GetAllRowsByTemp");
-
-                await using var context = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<S7plcSqlContext>();
-
-                return context.Proces.Where(x => x.Temperature >= lowLimit && x.Temperature <= highLimit).ToArray();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "GetAllRowsByTemp");
-                return Array.Empty<ProcessDb>();
-
-            }
+            _logger.LogError(e, "GetAllRowsByID");
+            return Array.Empty<ProcessDb>();
         }
+    }
 
-        public async Task<ProcessDb[]> GetAllRowsByAmbinetTemp(double lowLimit, double highLimit)
+    public async Task<ProcessDb[]> GetFilteredProcess(ProcessFilterRequest filterRequest)
+    {
+        try
         {
-            try
+            _logger.LogInformation("GetFilteredProcess | {filter}", JsonSerializer.Serialize(filterRequest));
+
+            await using var context = _serviceScopeFactory.CreateScope().ServiceProvider
+                .GetRequiredService<S7plcSqlContext>();
+
+            return filterRequest.FilterBy switch
             {
-                _logger.LogInformation("GetAllRowsByAmbinetTemp");
-
-                await using var context = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<S7plcSqlContext>();
-
-                return context.Proces.Where(x => x.AmbientTemperature >= lowLimit && x.AmbientTemperature <= highLimit).ToArray();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "GetAllRowsByAmbinetTemp");
-                return Array.Empty<ProcessDb>();
-
-            }
+                ProcessFilterOptions.ID => context.Proces.Where(x =>
+                        x.ID >= Convert.ToInt32(filterRequest.From) &&
+                        x.ID <= Convert.ToInt32(filterRequest.From))
+                    .ToArray(),
+                ProcessFilterOptions.Date => context.Proces.Where(x =>
+                        x.Date >= Convert.ToDateTime(filterRequest.From) &&
+                        x.Date <= Convert.ToDateTime(filterRequest.To))
+                    .ToArray(),
+                ProcessFilterOptions.Temperature => context.Proces.Where(x =>
+                        x.Temperature >= Convert.ToInt32(filterRequest.From) &&
+                        x.Temperature <= Convert.ToInt32(filterRequest.From))
+                    .ToArray(),
+                ProcessFilterOptions.AmbientTemperature => context.Proces.Where(x =>
+                        x.AmbientTemperature >= Convert.ToInt32(filterRequest.From) &&
+                        x.AmbientTemperature <= Convert.ToInt32(filterRequest.From))
+                    .ToArray(),
+                ProcessFilterOptions.Glucose => context.Proces.Where(x =>
+                        x.Glucose >= Convert.ToInt32(filterRequest.From) &&
+                        x.Glucose <= Convert.ToInt32(filterRequest.From))
+                    .ToArray(),
+                ProcessFilterOptions.Maltose => context.Proces.Where(x =>
+                        x.Maltose >= Convert.ToInt32(filterRequest.From) &&
+                        x.Maltose <= Convert.ToInt32(filterRequest.From))
+                    .ToArray(),
+                ProcessFilterOptions.Maltotriosis => context.Proces.Where(x =>
+                        x.Maltotriosis >= Convert.ToInt32(filterRequest.From) &&
+                        x.Maltotriosis <= Convert.ToInt32(filterRequest.From))
+                    .ToArray(),
+                ProcessFilterOptions.Sugar => context.Proces.Where(x =>
+                        x.Sugar >= Convert.ToInt32(filterRequest.From) &&
+                        x.Sugar <= Convert.ToInt32(filterRequest.From))
+                    .ToArray(),
+                ProcessFilterOptions.DeadYeast => context.Proces.Where(x =>
+                        x.DeadYeast >= Convert.ToInt32(filterRequest.From) &&
+                        x.DeadYeast <= Convert.ToInt32(filterRequest.From))
+                    .ToArray(),
+                ProcessFilterOptions.ActiveYeast => context.Proces.Where(x =>
+                        x.ActiveYeast >= Convert.ToInt32(filterRequest.From) &&
+                        x.ActiveYeast <= Convert.ToInt32(filterRequest.From))
+                    .ToArray(),
+                ProcessFilterOptions.LatticeYeast => context.Proces.Where(x =>
+                        x.LatticeYeast >= Convert.ToInt32(filterRequest.From) &&
+                        x.LatticeYeast <= Convert.ToInt32(filterRequest.From))
+                    .ToArray(),
+                ProcessFilterOptions.Ethanol => context.Proces.Where(x =>
+                        x.Ethanol >= Convert.ToInt32(filterRequest.From) &&
+                        x.Ethanol <= Convert.ToInt32(filterRequest.From))
+                    .ToArray(),
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
-
-        public async Task<ProcessDb[]> GetAllRowsByGlucose(double lowLimit, double highLimit)
+        catch (Exception e)
         {
-            try
-            {
-                _logger.LogInformation("GetAllRowsByGlucose");
-
-                await using var context = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<S7plcSqlContext>();
-
-                return context.Proces.Where(x => x.Glucose >= lowLimit && x.Glucose <= highLimit).ToArray();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "GetAllRowsByGlucose");
-                return Array.Empty<ProcessDb>();
-
-            }
+            _logger.LogError(e, "GetAllRowsByID");
+            return Array.Empty<ProcessDb>();
         }
-
-        public async Task<ProcessDb[]> GetAllRowsByMaltose(double lowLimit, double highLimit)
-        {
-            try
-            {
-                _logger.LogInformation("GetAllRowsByMaltose");
-
-                await using var context = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<S7plcSqlContext>();
-
-                return context.Proces.Where(x => x.Maltose >= lowLimit && x.Maltose <= highLimit).ToArray();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "GetAllRowsByMaltose");
-                return Array.Empty<ProcessDb>();
-
-            }
-        }
-
-        public async Task<ProcessDb[]> GetAllRowsByMaltotriosis(double lowLimit, double highLimit)
-        {
-            try
-            {
-                _logger.LogInformation("GetAllRowsByMaltotriosis");
-
-                await using var context = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<S7plcSqlContext>();
-
-                return context.Proces.Where(x => x.Maltotriosis >= lowLimit && x.Maltotriosis <= highLimit).ToArray();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "GetAllRowsByMaltotriosis");
-                return Array.Empty<ProcessDb>();
-
-            }
-        }
-
-        public async Task<ProcessDb[]> GetAllRowsBySugar(double lowLimit, double highLimit)
-        {
-            try
-            {
-                _logger.LogInformation("GetAllRowsBySugar");
-
-                await using var context = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<S7plcSqlContext>();
-
-                return context.Proces.Where(x => x.Sugar >= lowLimit && x.Sugar <= highLimit).ToArray();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "GetAllRowsBySugar");
-                return Array.Empty<ProcessDb>();
-
-            }
-        }
-
-        public async Task<ProcessDb[]> GetAllRowsByDeadYeast(double lowLimit, double highLimit)
-        {
-            try
-            {
-                _logger.LogInformation("GetAllRowsByDeadYeast");
-
-                await using var context = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<S7plcSqlContext>();
-
-                return context.Proces.Where(x => x.DeadYeast >= lowLimit && x.DeadYeast <= highLimit).ToArray();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "GetAllRowsByDeadYeast");
-                return Array.Empty<ProcessDb>();
-
-            }
-        }
-
-        public async Task<ProcessDb[]> GetAllRowsByActiveYeast(double lowLimit, double highLimit)
-        {
-            try
-            {
-                _logger.LogInformation("GetAllRowsByActiveYeast");
-
-                await using var context = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<S7plcSqlContext>();
-
-                return context.Proces.Where(x => x.ActiveYeast >= lowLimit && x.ActiveYeast <= highLimit).ToArray();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "GetAllRowsByActiveYeast");
-                return Array.Empty<ProcessDb>();
-
-            }
-        }
-
-        public async Task<ProcessDb[]> GetAllRowsByLatticeYeast(double lowLimit, double highLimit)
-        {
-            try
-            {
-                _logger.LogInformation("GetAllRowsByLatticeYeast");
-
-                await using var context = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<S7plcSqlContext>();
-
-                return context.Proces.Where(x => x.LatticeYeast >= lowLimit && x.LatticeYeast <= highLimit).ToArray();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "GetAllRowsByLatticeYeast");
-                return Array.Empty<ProcessDb>();
-
-            }
-        }
-
-        public async Task<ProcessDb[]> GetAllRowsByEthanol(double lowLimit, double highLimit)
-        {
-            try
-            {
-                _logger.LogInformation("GetAllRowsByEthanol");
-
-                await using var context = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<S7plcSqlContext>();
-
-                return context.Proces.Where(x => x.Ethanol >= lowLimit && x.Ethanol <= highLimit).ToArray();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "GetAllRowsByEthanol");
-                return Array.Empty<ProcessDb>();
-
-            }
-        }
-
     }
 }

@@ -1,5 +1,4 @@
 ﻿@page "/counter"
-@using System.Reflection
 
 @inject ProcessStore ProcessStore
 
@@ -8,31 +7,32 @@
 <SelectList TItem="string"
             TValue="string"
             Data="@ColumneNames"
-            TextField="@((item)=>item)"
-            ValueField="@((item)=>item)"
-            DefaultItemText="Filtr" 
+            TextField="@(item => item)"
+            ValueField="@(item => item)"
+            DefaultItemText="Filtr"
             SelectedValueChanged="OnSelected"/>
-            
+
 <SelectList TItem="int"
             TValue="int"
             Data="@ProcessCout"
-            TextField="@((item)=>item.ToString())"
-            ValueField="@((item)=>item)"
-            DefaultItemText="Nr Procesu" 
+            TextField="@(item => item.ToString())"
+            ValueField="@(item => item)"
+            DefaultItemText="Nr Procesu"
             SelectedValueChanged="OnSelectedID"/>
 
-<Check TValue="bool"  Checked="@chartHoldOn" CheckedChanged="@OnSelectedChartHoldOn">Only One Chart</Check>
+<Check TValue="bool" Checked="@chartHoldOn" CheckedChanged="@OnSelectedChartHoldOn">Only One Chart</Check>
 
 
-<LineChart @ref="lineChart" TItem="WatcherEvent" Options="@lineChartOptions" />
+<LineChart @ref="lineChart" TItem="WatcherEvent" Options="@lineChartOptions"/>
+
 @code {
     private LineChart<WatcherEvent> lineChart;
-    private List<WatcherEvent> dataList = new List<WatcherEvent>();
+    private readonly List<WatcherEvent> dataList = new();
     private ProcessDb[] processList;
     private ProcessDb[] processListFiltered;
 
-    private static string[] ColumneNames = new string[] { };
-    private static int[] ProcessCout = new int[] { };
+    private static string[] ColumneNames = { };
+    private static int[] ProcessCout = { };
 
     private int selectedID;
     private int ColorID;
@@ -40,18 +40,17 @@
     private bool chartHoldOn;
 
 
-
-    LineChartOptions lineChartOptions = new()
+    readonly LineChartOptions lineChartOptions = new()
     {
         Parsing = new ChartParsing
         {
             XAxisKey = "sector",
-            YAxisKey = "count",
+            YAxisKey = "count"
         }
     };
 
-    private List<string> backgroundColors = new() { ChartColor.FromRgba( 255, 99, 132, 0.2f ), ChartColor.FromRgba( 54, 162, 235, 0.2f ), ChartColor.FromRgba( 255, 206, 86, 0.2f ), ChartColor.FromRgba( 75, 192, 192, 0.2f ), ChartColor.FromRgba( 153, 102, 255, 0.2f ), ChartColor.FromRgba( 255, 159, 64, 0.2f ) };
-    private List<string> borderColors = new() { ChartColor.FromRgba( 255, 99, 132, 1f ), ChartColor.FromRgba( 54, 162, 235, 1f ), ChartColor.FromRgba( 255, 206, 86, 1f ), ChartColor.FromRgba( 75, 192, 192, 1f ), ChartColor.FromRgba( 153, 102, 255, 1f ), ChartColor.FromRgba( 255, 159, 64, 1f ) };
+    private readonly List<string> backgroundColors = new() { ChartColor.FromRgba(255, 99, 132, 0.2f), ChartColor.FromRgba(54, 162, 235, 0.2f), ChartColor.FromRgba(255, 206, 86, 0.2f), ChartColor.FromRgba(75, 192, 192, 0.2f), ChartColor.FromRgba(153, 102, 255, 0.2f), ChartColor.FromRgba(255, 159, 64, 0.2f) };
+    private readonly List<string> borderColors = new() { ChartColor.FromRgba(255, 99, 132, 1f), ChartColor.FromRgba(54, 162, 235, 1f), ChartColor.FromRgba(255, 206, 86, 1f), ChartColor.FromRgba(75, 192, 192, 1f), ChartColor.FromRgba(153, 102, 255, 1f), ChartColor.FromRgba(255, 159, 64, 1f) };
 
     private bool isAlreadyInitialised;
 
@@ -64,13 +63,13 @@
         public DateTime Date { get; set; }
     }
 
-    protected override async Task OnAfterRenderAsync( bool firstRender )
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (isAlreadyInitialised = false)
         {
             isAlreadyInitialised = true;
             await lineChart.Clear();
-            await lineChart.AddDataSet( GetLineChartDataset() );
+            await lineChart.AddDataSet(GetLineChartDataset());
         }
     }
 
@@ -83,7 +82,7 @@
         }
 
 
-        await lineChart.AddDataSet( GetLineChartDataset() );
+        await lineChart.AddDataSet(GetLineChartDataset());
     }
 
     protected override async Task OnInitializedAsync()
@@ -94,34 +93,30 @@
         processListFiltered = processList;
         ProcessCout = GetProcessCout();
         await base.OnInitializedAsync();
-
     }
 
     private int[] GetProcessCout()
     {
         var process = ProcessStore.GetLastRow().Result;
-        var cout = process.ID/100000;
+        var cout = process.ID / 100000;
         var couter = new List<int>();
-        for (int i = 1; i <= cout; i++)
+        for (var i = 1; i <= cout; i++)
         {
             couter.Add(i);
-
         }
         return couter.ToArray();
-
     }
 
 
     private LineChartDataset<WatcherEvent> GetLineChartDataset()
     {
-
         processList = processListFiltered;
         ColorID++;
-        if(ColorID > 5)
+        if (ColorID > 5)
         {
             ColorID = 0;
         }
-        return new()
+        return new LineChartDataset<WatcherEvent>
         {
             Label = filterSelectedValue,
             Data = dataList,
@@ -130,16 +125,15 @@
             Fill = true,
             PointRadius = 3,
             BorderWidth = 1,
-            PointBorderColor = Enumerable.Repeat( borderColors.First(), 6 ).ToList(),
-            CubicInterpolationMode = "monotone",
-
+            PointBorderColor = Enumerable.Repeat(borderColors.First(), 6).ToList(),
+            CubicInterpolationMode = "monotone"
         };
     }
 
     private string[] GetColumneNames()
     {
-        Type type = typeof(ProcessDb);
-        PropertyInfo[] properties = type.GetProperties();
+        var type = typeof(ProcessDb);
+        var properties = type.GetProperties();
 
         return properties.Where(x => x.Name != "ID" && x.Name != "Date").Select(x => x.Name).ToArray();
     }
@@ -171,7 +165,7 @@
             case "Temperature":
                 foreach (var processDb in processListFiltered)
                 {
-                    var watcherEvent = new WatcherEvent()
+                    var watcherEvent = new WatcherEvent
                     {
                         Sector = processDb.ID.ToString(),
                         Count = processDb.Temperature,
@@ -183,7 +177,7 @@
             case "AmbientTemperature":
                 foreach (var processDb in processListFiltered)
                 {
-                    var watcherEvent = new WatcherEvent()
+                    var watcherEvent = new WatcherEvent
                     {
                         Sector = processDb.ID.ToString(),
                         Count = processDb.AmbientTemperature,
@@ -195,7 +189,7 @@
             case "Glucose":
                 foreach (var processDb in processListFiltered)
                 {
-                    var watcherEvent = new WatcherEvent()
+                    var watcherEvent = new WatcherEvent
                     {
                         Sector = processDb.ID.ToString(),
                         Count = processDb.Glucose,
@@ -207,7 +201,7 @@
             case "Maltose":
                 foreach (var processDb in processListFiltered)
                 {
-                    var watcherEvent = new WatcherEvent()
+                    var watcherEvent = new WatcherEvent
                     {
                         Sector = processDb.ID.ToString(),
                         Count = processDb.Maltose,
@@ -219,7 +213,7 @@
             case "Maltotriosis":
                 foreach (var processDb in processListFiltered)
                 {
-                    var watcherEvent = new WatcherEvent()
+                    var watcherEvent = new WatcherEvent
                     {
                         Sector = processDb.ID.ToString(),
                         Count = processDb.Maltotriosis,
@@ -231,7 +225,7 @@
             case "Sugar":
                 foreach (var processDb in processListFiltered)
                 {
-                    var watcherEvent = new WatcherEvent()
+                    var watcherEvent = new WatcherEvent
                     {
                         Sector = processDb.ID.ToString(),
                         Count = processDb.Sugar,
@@ -243,7 +237,7 @@
             case "DeadYeast":
                 foreach (var processDb in processListFiltered)
                 {
-                    var watcherEvent = new WatcherEvent()
+                    var watcherEvent = new WatcherEvent
                     {
                         Sector = processDb.ID.ToString(),
                         Count = processDb.DeadYeast,
@@ -255,7 +249,7 @@
             case "ActiveYeast":
                 foreach (var processDb in processListFiltered)
                 {
-                    var watcherEvent = new WatcherEvent()
+                    var watcherEvent = new WatcherEvent
                     {
                         Sector = processDb.ID.ToString(),
                         Count = processDb.ActiveYeast,
@@ -267,7 +261,7 @@
             case "LatticeYeast":
                 foreach (var processDb in processListFiltered)
                 {
-                    var watcherEvent = new WatcherEvent()
+                    var watcherEvent = new WatcherEvent
                     {
                         Sector = processDb.ID.ToString(),
                         Count = processDb.LatticeYeast,
@@ -279,7 +273,7 @@
             case "Ethanol":
                 foreach (var processDb in processListFiltered)
                 {
-                    var watcherEvent = new WatcherEvent()
+                    var watcherEvent = new WatcherEvent
                     {
                         Sector = processDb.ID.ToString(),
                         Count = processDb.Ethanol,
@@ -291,7 +285,7 @@
             default:
                 foreach (var processDb in processListFiltered)
                 {
-                    var watcherEvent = new WatcherEvent()
+                    var watcherEvent = new WatcherEvent
                     {
                         Sector = processDb.ID.ToString(),
                         Count = processDb.Temperature,
@@ -300,19 +294,9 @@
                     dataList.Add(watcherEvent);
                 }
                 break;
-
         }
 
         ChartRefresh();
-
-
-        
-
-
-        
     }
-    
+
 }
-
-
-

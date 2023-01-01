@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace BSc_Thesis.Models;
 
-namespace BSc_Thesis.Models;
-
-public partial class Proce
+public class Proce
 {
     public int Id { get; set; }
 

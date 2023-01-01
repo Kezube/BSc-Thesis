@@ -7,7 +7,6 @@ public partial class S7plcSqlContext : DbContext
 {
     public S7plcSqlContext(DbContextOptions<S7plcSqlContext> options) : base(options)
     {
-        
     }
 
     public DbSet<ProcessDb> Proces { get; set; }
@@ -29,11 +28,9 @@ public partial class S7plcSqlContext : DbContext
             entity.Property(x => x.DeadYeast);
             entity.Property(x => x.LatticeYeast);
             entity.Property(x => x.Ethanol);
-
         });
         OnModelCreatingPartial(modelBuilder);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
-

@@ -1,63 +1,61 @@
 ﻿@page "/"
 @inject ProcessStore ProcessStore
+@inject ICourier Courier
+@implements IDisposable
 
 
 <PageTitle>Index</PageTitle>
 <p>Elo</p>
 
 ID:
-<NumericEdit Value="processList.ID" ReadOnly />
+<NumericEdit Value="process.ID" ReadOnly/>
 Date:
-<DatePicker TValue="DateTime?" Date="processList.Date" ReadOnly />
+<DatePicker TValue="DateTime?" Date="process.Date" ReadOnly/>
 Temperature:
-<NumericEdit Value="processList.Temperature" ReadOnly/>
+<NumericEdit Value="process.Temperature" ReadOnly/>
 Ambient Temperature:
-<NumericEdit Value="processList.AmbientTemperature" ReadOnly/>
+<NumericEdit Value="process.AmbientTemperature" ReadOnly/>
 Sugar:
-<NumericEdit Value="processList.Sugar" ReadOnly/>
+<NumericEdit Value="process.Sugar" ReadOnly/>
 Glucose:
-<NumericEdit Value="processList.Glucose" ReadOnly/>
+<NumericEdit Value="process.Glucose" ReadOnly/>
 Maltose:
-<NumericEdit Value="processList.Maltose" ReadOnly/>
+<NumericEdit Value="process.Maltose" ReadOnly/>
 Maltotriosis:
-<NumericEdit Value="processList.Maltotriosis" ReadOnly/>
+<NumericEdit Value="process.Maltotriosis" ReadOnly/>
 Active Yeast:
-<NumericEdit Value="processList.ActiveYeast" ReadOnly/>
+<NumericEdit Value="process.ActiveYeast" ReadOnly/>
 Lattice Yeast:
-<NumericEdit Value="processList.LatticeYeast" ReadOnly/>
+<NumericEdit Value="process.LatticeYeast" ReadOnly/>
 Dead Yeast:
-<NumericEdit Value="processList.DeadYeast" ReadOnly/>
+<NumericEdit Value="process.DeadYeast" ReadOnly/>
 Ethanol:
-<NumericEdit Value="processList.Ethanol" ReadOnly/>
-
+<NumericEdit Value="process.Ethanol" ReadOnly/>
 
 
 @code{
-    private ProcessDb processList;
+    private ProcessDb process;
 
     protected override async Task OnInitializedAsync()
     {
-        processList = await ProcessStore.GetLastRow();
-        Task.Factory.StartNew(() => AutoRefresh(), TaskCreationOptions.LongRunning);
+        Courier.Subscribe<ProcessUpdated>(OnProcessUpdated);
+        RefreshProcess();
     }
 
-    private async Task AutoRefresh()
+    private async Task OnProcessUpdated(ProcessUpdated pu, CancellationToken _)
     {
-        while (true)
-        { 
-            await Task.Delay(TimeSpan.FromSeconds(1));
-            var currentProcessList = await ProcessStore.GetLastRow();
-
-
-            if (currentProcessList.ID == processList.ID)
-            {
-                continue;
-            }
-
-            processList = currentProcessList;
-            InvokeAsync(StateHasChanged);
-
-        }
-        
+        await RefreshProcess();
     }
+
+    private async Task RefreshProcess()
+    {
+        process = await ProcessStore.GetLastRow() ?? new ProcessDb();
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Courier.UnSubscribe<ProcessUpdated>(OnProcessUpdated);
+    }
+
 }
