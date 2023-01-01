@@ -15,6 +15,7 @@ public class ProcessStore
     {
         _logger = logger;
         _serviceScopeFactory = serviceScopeFactory;
+        var x = GetAllRows().Result;
     }
 
 
@@ -26,7 +27,7 @@ public class ProcessStore
 
             await using var context = _serviceScopeFactory.CreateScope().ServiceProvider
                 .GetRequiredService<S7plcSqlContext>();
-            return await context.Proces.LastOrDefaultAsync();
+            return context.Proces.OrderBy(x=> x.ID).LastOrDefault();
         }
         catch (Exception e)
         {
@@ -80,55 +81,57 @@ public class ProcessStore
             await using var context = _serviceScopeFactory.CreateScope().ServiceProvider
                 .GetRequiredService<S7plcSqlContext>();
 
+         
+
             return filterRequest.FilterBy switch
             {
                 ProcessFilterOptions.ID => context.Proces.Where(x =>
                         x.ID >= Convert.ToInt32(filterRequest.From) &&
-                        x.ID <= Convert.ToInt32(filterRequest.From))
+                        x.ID <= Convert.ToInt32(filterRequest.To))
                     .ToArray(),
                 ProcessFilterOptions.Date => context.Proces.Where(x =>
                         x.Date >= Convert.ToDateTime(filterRequest.From) &&
                         x.Date <= Convert.ToDateTime(filterRequest.To))
                     .ToArray(),
                 ProcessFilterOptions.Temperature => context.Proces.Where(x =>
-                        x.Temperature >= Convert.ToInt32(filterRequest.From) &&
-                        x.Temperature <= Convert.ToInt32(filterRequest.From))
+                        x.Temperature >= Convert.ToDouble(filterRequest.From) &&
+                        x.Temperature <= Convert.ToDouble(filterRequest.To))
                     .ToArray(),
                 ProcessFilterOptions.AmbientTemperature => context.Proces.Where(x =>
-                        x.AmbientTemperature >= Convert.ToInt32(filterRequest.From) &&
-                        x.AmbientTemperature <= Convert.ToInt32(filterRequest.From))
+                        x.AmbientTemperature >= Convert.ToDouble(filterRequest.From) &&
+                        x.AmbientTemperature <= Convert.ToDouble(filterRequest.To))
                     .ToArray(),
                 ProcessFilterOptions.Glucose => context.Proces.Where(x =>
-                        x.Glucose >= Convert.ToInt32(filterRequest.From) &&
-                        x.Glucose <= Convert.ToInt32(filterRequest.From))
+                        x.Glucose >= Convert.ToDouble(filterRequest.From) &&
+                        x.Glucose <= Convert.ToDouble(filterRequest.To))
                     .ToArray(),
                 ProcessFilterOptions.Maltose => context.Proces.Where(x =>
-                        x.Maltose >= Convert.ToInt32(filterRequest.From) &&
-                        x.Maltose <= Convert.ToInt32(filterRequest.From))
+                        x.Maltose >= Convert.ToDouble(filterRequest.From) &&
+                        x.Maltose <= Convert.ToDouble(filterRequest.To))
                     .ToArray(),
                 ProcessFilterOptions.Maltotriosis => context.Proces.Where(x =>
-                        x.Maltotriosis >= Convert.ToInt32(filterRequest.From) &&
-                        x.Maltotriosis <= Convert.ToInt32(filterRequest.From))
+                        x.Maltotriosis >= Convert.ToDouble(filterRequest.From) &&
+                        x.Maltotriosis <= Convert.ToDouble(filterRequest.To))
                     .ToArray(),
                 ProcessFilterOptions.Sugar => context.Proces.Where(x =>
-                        x.Sugar >= Convert.ToInt32(filterRequest.From) &&
-                        x.Sugar <= Convert.ToInt32(filterRequest.From))
+                        x.Sugar >= Convert.ToDouble(filterRequest.From) &&
+                        x.Sugar <= Convert.ToDouble(filterRequest.To))
                     .ToArray(),
                 ProcessFilterOptions.DeadYeast => context.Proces.Where(x =>
-                        x.DeadYeast >= Convert.ToInt32(filterRequest.From) &&
-                        x.DeadYeast <= Convert.ToInt32(filterRequest.From))
+                        x.DeadYeast >= Convert.ToDouble(filterRequest.From) &&
+                        x.DeadYeast <= Convert.ToDouble(filterRequest.To))
                     .ToArray(),
                 ProcessFilterOptions.ActiveYeast => context.Proces.Where(x =>
-                        x.ActiveYeast >= Convert.ToInt32(filterRequest.From) &&
-                        x.ActiveYeast <= Convert.ToInt32(filterRequest.From))
+                        x.ActiveYeast >= Convert.ToDouble(filterRequest.From) &&
+                        x.ActiveYeast <= Convert.ToDouble(filterRequest.To))
                     .ToArray(),
                 ProcessFilterOptions.LatticeYeast => context.Proces.Where(x =>
-                        x.LatticeYeast >= Convert.ToInt32(filterRequest.From) &&
-                        x.LatticeYeast <= Convert.ToInt32(filterRequest.From))
+                        x.LatticeYeast >= Convert.ToDouble(filterRequest.From) &&
+                        x.LatticeYeast <= Convert.ToDouble(filterRequest.To))
                     .ToArray(),
                 ProcessFilterOptions.Ethanol => context.Proces.Where(x =>
-                        x.Ethanol >= Convert.ToInt32(filterRequest.From) &&
-                        x.Ethanol <= Convert.ToInt32(filterRequest.From))
+                        x.Ethanol >= Convert.ToDouble(filterRequest.From) &&
+                        x.Ethanol <= Convert.ToDouble(filterRequest.To))
                     .ToArray(),
                 _ => throw new ArgumentOutOfRangeException()
             };

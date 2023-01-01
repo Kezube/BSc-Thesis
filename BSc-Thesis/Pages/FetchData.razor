@@ -13,37 +13,47 @@
             DefaultItemText="Filtr"
             SelectedValueChanged="OnSelected"/>
 
-@if (filterSelectedValue == "ID")
+            
+@switch (filterSelectedValue)
 {
-    <SelectList TItem="int"
-                TValue="int"
-                Data="@ProcessCout"
-                TextField="@(item => item.ToString())"
-                ValueField="@(item => item)"
-                DefaultItemText="Nr Procesu"
-                SelectedValueChanged="OnSelectedID"/>
+    case "ID":
+        <SelectList TItem="int"
+                    TValue="int"
+                    Data="@ProcessCout"
+                    TextField="@(item => item.ToString())"
+                    ValueField="@(item => item)"
+                    DefaultItemText="Nr Procesu"
+                    SelectedValueChanged="OnSelectedID"/>
+        break;
+
+    case "Date":
+        <DatePicker TValue="DateTime?"
+                    DateChanged="OnSelectedDateFrom"
+                    Date="DateTime.MinValue"/>
+        <DatePicker TValue="DateTime?"
+                    DateChanged="OnSelectedDateTo"
+                    Date="DateTime.MaxValue"/>
+        break;
+    case "Filtr":
+    case null:
+        break;
+
+    default:
+        <NumericPicker
+            TValue="double"
+            ModifyValueOnWheel WheelOn="NumericWheelOn.Hover"
+            ValueChanged="OnSelectedNumLow"
+            DebounceInterval="500"
+            Debounce="true"/>
+        <NumericPicker
+            TValue="double"
+            ModifyValueOnWheel WheelOn="NumericWheelOn.Hover"
+            ValueChanged="OnSelectedNumHigh"
+            DebounceInterval="500"
+            Debounce="true"/>
+        break;
 }
 
-@if (filterSelectedValue == "Date")
-{
-    <DatePicker TValue="DateTime?"
-
-                DateChanged="OnSelectedDateFrom"/>
-    <DatePicker TValue="DateTime?"
-                DateChanged="OnSelectedDateTo"/>
-}
-
-@if (!(filterSelectedValue == "ID" || filterSelectedValue == "Date" || filterSelectedValue == null))
-{
-    <NumericPicker
-        TValue="double"
-        ModifyValueOnWheel WheelOn="NumericWheelOn.Hover"
-        ValueChanged="OnSelectedNumLow"/>
-    <NumericPicker
-        TValue="double"
-        ModifyValueOnWheel WheelOn="NumericWheelOn.Hover"
-        ValueChanged="OnSelectedNumHigh"/>
-}
 
 <DataGrid TItem="ProcessDb"
           Data="processListFiltered"
@@ -83,20 +93,18 @@
         ColumneNames = GetColumneNames();
         processList = await ProcessStore.GetAllRows();
         processListFiltered = processList;
-        ProcessCout = GetProcessCout();
+        ProcessCout = await GetProcessCout();
         await base.OnInitializedAsync();
     }
-
     private string[] GetColumneNames()
     {
         var type = typeof(ProcessDb);
         var properties = type.GetProperties();
         return properties.Select(x => x.Name).ToArray();
     }
-
-    private int[] GetProcessCout()
+    private async Task<int[]> GetProcessCout()
     {
-        var process = ProcessStore.GetLastRow().Result;
+        var process =  await ProcessStore.GetLastRow();
         var cout = process.ID / 100000;
         var couter = new List<int>();
         for (var i = 1; i <= cout; i++)
@@ -108,9 +116,8 @@
     {
         lowLimit = value;
         if (highLimit <= lowLimit)
-        {
             highLimit = lowLimit + 1;
-        }
+        
         OnSelected(filterSelectedValue);
     }
 
@@ -145,6 +152,7 @@
     private async Task OnSelected(string value)
     {
         filterSelectedValue = value;
+
 
         if (filterSelectedValue == "ID")
         {
