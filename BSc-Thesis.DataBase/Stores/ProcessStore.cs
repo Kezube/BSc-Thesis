@@ -81,7 +81,7 @@ public class ProcessStore
             await using var context = _serviceScopeFactory.CreateScope().ServiceProvider
                 .GetRequiredService<S7plcSqlContext>();
 
-         
+
 
             return filterRequest.FilterBy switch
             {

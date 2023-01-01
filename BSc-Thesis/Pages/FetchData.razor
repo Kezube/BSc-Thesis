@@ -85,7 +85,7 @@
     private ProcessDb[] processList;
     private ProcessDb[] processListFiltered;
     private static string[] ColumneNames = { };
-    private static int[] ProcessCout = { };
+    private static IEnumerable<int> ProcessCout;
     private string filterSelectedValue;
 
     protected override async Task OnInitializedAsync()
@@ -102,14 +102,14 @@
         var properties = type.GetProperties();
         return properties.Select(x => x.Name).ToArray();
     }
-    private async Task<int[]> GetProcessCout()
+    private async Task<IEnumerable<int>> GetProcessCout()
     {
         var process =  await ProcessStore.GetLastRow();
         var cout = process.ID / 100000;
         var couter = new List<int>();
         for (var i = 1; i <= cout; i++)
             couter.Add(i);
-        return couter.ToArray();
+        return couter;
     }
 
     private async void OnSelectedNumLow(double value)

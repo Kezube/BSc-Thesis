@@ -39,7 +39,7 @@ Ethanol:
     protected override async Task OnInitializedAsync()
     {
         Courier.Subscribe<ProcessUpdated>(OnProcessUpdated);
-        RefreshProcess();
+        await RefreshProcess();
     }
 
     private async Task OnProcessUpdated(ProcessUpdated pu, CancellationToken _)
@@ -50,12 +50,11 @@ Ethanol:
     private async Task RefreshProcess()
     {
         process = await ProcessStore.GetLastRow() ?? new ProcessDb();
-        InvokeAsync(StateHasChanged);
+        _ = InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
     {
         Courier.UnSubscribe<ProcessUpdated>(OnProcessUpdated);
     }
-
 }
