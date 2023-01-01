@@ -1,6 +1,6 @@
 ﻿@page "/counter"
 
-@inject ProcessStore ProcessStore
+@inject IProcessStore ProcessStore
 
 
 <PageTitle>Counter</PageTitle>
@@ -89,7 +89,7 @@
     {
         chartHoldOn = true;
         ColumneNames = GetColumneNames();
-        processList = await ProcessStore.GetAllRows();
+        processList = await ProcessStore.GetAll();
         processListFiltered = processList;
         ProcessCout = GetProcessCout();
         await base.OnInitializedAsync();
@@ -97,7 +97,7 @@
 
     private int[] GetProcessCout()
     {
-        var process = ProcessStore.GetLastRow().Result;
+        var process = ProcessStore.GetLast().Result;
         var cout = process.ID / 100000;
         var couter = new List<int>();
         for (var i = 1; i <= cout; i++)
@@ -141,7 +141,7 @@
     private async void OnSelectedID(int value)
     {
         selectedID = value;
-        processListFiltered = await ProcessStore.GetAllRowsByID(selectedID);
+        processListFiltered = await ProcessStore.GetByID(selectedID);
         lineChart.Clear();
         OnSelected(filterSelectedValue);
     }

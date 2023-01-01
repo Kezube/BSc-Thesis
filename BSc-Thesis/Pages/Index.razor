@@ -1,55 +1,82 @@
 ﻿@page "/"
-@inject ProcessStore ProcessStore
+@inject IProcessStore ProcessStore
 @inject ICourier Courier
 @implements IDisposable
-
-
 <PageTitle>Index</PageTitle>
-<p style="font-size=50px">Elo</p>
 
-ID:
-<NumericEdit Value="process.ID" ReadOnly Class="w-25"/>
-Date:
-<DatePicker TValue="DateTime?" Date="process.Date" ReadOnly/>
-Temperature:
-<NumericEdit Value="process.Temperature" ReadOnly/>
-Ambient Temperature:
-<NumericEdit Value="process.AmbientTemperature" ReadOnly/>
-Sugar:
-<NumericEdit Value="process.Sugar" ReadOnly/>
-Glucose:
-<NumericEdit Value="process.Glucose" ReadOnly/>
-Maltose:
-<NumericEdit Value="process.Maltose" ReadOnly/>
-Maltotriosis:
-<NumericEdit Value="process.Maltotriosis" ReadOnly/>
-Active Yeast:
-<NumericEdit Value="process.ActiveYeast" ReadOnly/>
-Lattice Yeast:
-<NumericEdit Value="process.LatticeYeast" ReadOnly/>
-Dead Yeast:
-<NumericEdit Value="process.DeadYeast" ReadOnly/>
-Ethanol:
-<NumericEdit Value="process.Ethanol" ReadOnly/>
+<Div Flex="Flex.Column.AlignContent.Between.AlignItems.Center">
+    @if (process is null)
+    {
+        <p>Trwa proces przetwarzania danych w celu uzyskania na ich podstawie użytecznych informacji i wniosków</p>
+        <SpinKit Color="#0a2464" Type="SpinKitType.Chase" Size="5rem" Centered="true"/>
+    }
+    else
+    {
+        <p>Informacje o najnowszym procesie:</p>
 
-
+        <Button Color="Color.Primary" Class="m-1" Disabled Outline Size="Size.Large">
+            ID: @process?.ID
+        </Button>
+        <Button Color="Color.Primary" Class="m-1" Disabled Outline Size="Size.Large">
+            Date: @process?.Date
+        </Button>
+        <Button Color="Color.Primary" Class="m-1" Disabled Outline Size="Size.Large">
+            Temperature: @process?.Temperature
+        </Button>
+        <Button Color="Color.Primary" Class="m-1" Disabled Outline Size="Size.Large">
+            Sugar: @process?.Sugar
+        </Button>
+        <Button Color="Color.Primary" Class="m-1" Disabled Outline Size="Size.Large">
+            Glucose: @process?.Glucose
+        </Button>
+        <Button Color="Color.Primary" Class="m-1" Disabled Outline Size="Size.Large">
+            Maltose: @process?.Maltose
+        </Button>
+        <Button Color="Color.Primary" Class="m-1" Disabled Outline Size="Size.Large">
+            Maltotriosis: @process?.Maltotriosis
+        </Button>
+        <Button Color="Color.Primary" Class="m-1" Disabled Outline Size="Size.Large">
+            Active Yeast: @process?.ActiveYeast
+        </Button>
+        <Button Color="Color.Primary" Class="m-1" Disabled Outline Size="Size.Large">
+            Lattice Yeast: @process?.LatticeYeast
+        </Button>
+        <Button Color="Color.Primary" Class="m-1" Disabled Outline Size="Size.Large">
+            Dead Yeast: @process?.DeadYeast
+        </Button>
+        <Button Color="Color.Primary" Class="m-1" Disabled Outline Size="Size.Large">
+            Ethanol: @process?.Ethanol
+        </Button>
+    }
+</Div>
+<SnackbarStack @ref="snackbarStack" Location="SnackbarStackLocation.End" />
 @code{
+    
     private ProcessDb process;
+    SnackbarStack snackbarStack;
 
     protected override async Task OnInitializedAsync()
     {
         Courier.Subscribe<ProcessUpdated>(OnProcessUpdated);
-        await RefreshProcess();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await RefreshProcess();
+
+        base.OnAfterRenderAsync(firstRender);
     }
 
     private async Task OnProcessUpdated(ProcessUpdated pu, CancellationToken _)
     {
         await RefreshProcess();
+        await snackbarStack.PushAsync("Aktualizacja procesu " + DateTime.Now, SnackbarColor.Primary);
     }
 
     private async Task RefreshProcess()
     {
-        process = await ProcessStore.GetLastRow() ?? new ProcessDb();
+        process = await ProcessStore.GetLast();
         _ = InvokeAsync(StateHasChanged);
     }
 
@@ -57,4 +84,5 @@ Ethanol:
     {
         Courier.UnSubscribe<ProcessUpdated>(OnProcessUpdated);
     }
+
 }

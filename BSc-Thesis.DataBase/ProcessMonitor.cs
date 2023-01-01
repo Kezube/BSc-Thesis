@@ -23,7 +23,7 @@ public class ProcessMonitor : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Process monitor running.");
+        _logger.LogInformation("Process monitor running");
         await DoWorkTicketExpiredMonitor(stoppingToken);
     }
 
@@ -35,10 +35,10 @@ public class ProcessMonitor : BackgroundService
             _logger.LogInformation("Process monitor loop iteration...");
 
             using var scope = _serviceScopeFactory.CreateScope();
-            var ticketRepository = scope.ServiceProvider.GetRequiredService<ProcessStore>();
+            var ticketRepository = scope.ServiceProvider.GetRequiredService<IProcessStore>();
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
-            var lastCurrentRow = await ticketRepository.GetLastRow();
+            var lastCurrentRow = await ticketRepository.GetLast();
 
             _lastRow ??= lastCurrentRow;
 
@@ -55,7 +55,7 @@ public class ProcessMonitor : BackgroundService
 
     public override async Task StopAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Process monitor is stopping.");
+        _logger.LogInformation("Process monitor is stopping");
         await base.StopAsync(stoppingToken);
     }
 }

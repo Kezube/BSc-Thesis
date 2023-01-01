@@ -1,25 +1,27 @@
 ﻿@page "/ProcessDeta"
+@using System.Linq.Expressions
 
 <PageTitle>Weather forecast</PageTitle>
 
-@inject ProcessStore ProcessStore
+@inject IProcessStore ProcessStore
 
 
 <SelectList TItem="string"
             TValue="string"
-            Data="@ColumneNames"
+            Data="@_columneNames"
             TextField="@(item => item)"
             ValueField="@(item => item)"
             DefaultItemText="Filtr"
-            SelectedValueChanged="OnSelected"/>
+            SelectedValueChanged="GetFilteredProcess"
+            SelectedValue="_filterSelectedValue"/>
 
-            
-@switch (filterSelectedValue)
+
+@switch (_filterSelectedValue)
 {
     case "ID":
         <SelectList TItem="int"
                     TValue="int"
-                    Data="@ProcessCout"
+                    Data="@_processCout"
                     TextField="@(item => item.ToString())"
                     ValueField="@(item => item)"
                     DefaultItemText="Nr Procesu"
@@ -56,7 +58,7 @@
 
 
 <DataGrid TItem="ProcessDb"
-          Data="processListFiltered"
+          Data="_processList"
           PageSize="30"
           ShowPager
           Hoverable>
@@ -77,34 +79,35 @@
 
 
 @code{
-    DateTime? datePickerFrom;
-    DateTime? datePickerTo;
-    private double lowLimit;
-    private double highLimit;
-    private int selectedID;
-    private ProcessDb[] processList;
-    private ProcessDb[] processListFiltered;
-    private static string[] ColumneNames = { };
-    private static IEnumerable<int> ProcessCout;
-    private string filterSelectedValue;
+    DateTime? _datePickerFrom;
+    DateTime? _datePickerTo;
+    private double _lowLimit;
+    private double _highLimit;
+    private int _selectedId;
+    private ProcessDb[] _processList;
+    private static string[] _columneNames = { };
+    private static IEnumerable<int> _processCout;
+    private string _filterSelectedValue;
 
     protected override async Task OnInitializedAsync()
     {
-        ColumneNames = GetColumneNames();
-        processList = await ProcessStore.GetAllRows();
-        processListFiltered = processList;
-        ProcessCout = await GetProcessCout();
+        _columneNames = GetColumneNames();
+        _processList = await ProcessStore.GetAll();
+        _processCout = await GetProcessCout();
+
         await base.OnInitializedAsync();
     }
+
     private string[] GetColumneNames()
     {
         var type = typeof(ProcessDb);
         var properties = type.GetProperties();
         return properties.Select(x => x.Name).ToArray();
     }
+
     private async Task<IEnumerable<int>> GetProcessCout()
     {
-        var process =  await ProcessStore.GetLastRow();
+        var process = await ProcessStore.GetLast();
         var cout = process.ID / 100000;
         var couter = new List<int>();
         for (var i = 1; i <= cout; i++)
@@ -112,72 +115,67 @@
         return couter;
     }
 
-    private async void OnSelectedNumLow(double value)
+    private async Task OnSelectedNumLow(double value)
     {
-        lowLimit = value;
-        if (highLimit <= lowLimit)
-            highLimit = lowLimit + 1;
-        
-        OnSelected(filterSelectedValue);
+        _lowLimit = value;
+        if (_highLimit <= _lowLimit)
+            _highLimit = _lowLimit + 1;
+
+        await GetFilteredProcess();
     }
 
-    private void OnSelectedNumHigh(double value)
+    private async Task OnSelectedNumHigh(double value)
     {
-        highLimit = value;
-        if (lowLimit >= highLimit)
+        _highLimit = value;
+        if (_lowLimit >= _highLimit)
+            _lowLimit = _highLimit - 1;
+
+        await GetFilteredProcess();
+    }
+
+    private async Task OnSelectedDateFrom(DateTime? value)
+    {
+        _datePickerFrom = value;
+        await GetFilteredProcess();
+    }
+
+    private async Task OnSelectedDateTo(DateTime? value)
+    {
+        _datePickerTo = value;
+        await GetFilteredProcess();
+    }
+
+    private async Task OnSelectedID(int value)
+    {
+        _selectedId = value;
+        await GetFilteredProcess();
+    }
+
+    private async Task GetFilteredProcess()
+    {
+        if (_filterSelectedValue == "ID")
         {
-            lowLimit = highLimit - 1;
-        }
-        OnSelected(filterSelectedValue);
-    }
-
-    private void OnSelectedDateFrom(DateTime? value)
-    {
-        datePickerFrom = value;
-        OnSelected(filterSelectedValue);
-    }
-
-    private void OnSelectedDateTo(DateTime? value)
-    {
-        datePickerTo = value;
-        OnSelected(filterSelectedValue);
-    }
-
-    private void OnSelectedID(int value)
-    {
-        selectedID = value;
-        OnSelected(filterSelectedValue);
-    }
-
-    private async Task OnSelected(string value)
-    {
-        filterSelectedValue = value;
-
-
-        if (filterSelectedValue == "ID")
-        {
-            processListFiltered = await ProcessStore.GetAllRowsByID(selectedID);
+            _processList = await ProcessStore.GetByID(_selectedId);
             return;
         }
 
-        var filterRequest = filterSelectedValue switch
+        Expression<Func<ProcessDb, bool>> expression = _filterSelectedValue switch
         {
-            "Date" => new ProcessFilterRequest(ProcessFilterOptions.Date, datePickerFrom ?? DateTime.Now, datePickerTo ?? DateTime.Now),
-            "Temperature" => new ProcessFilterRequest(ProcessFilterOptions.Temperature, lowLimit, highLimit),
-            "AmbientTemperature" => new ProcessFilterRequest(ProcessFilterOptions.AmbientTemperature, lowLimit, highLimit),
-            "Glucose" => new ProcessFilterRequest(ProcessFilterOptions.Glucose, lowLimit, highLimit),
-            "Maltose" => new ProcessFilterRequest(ProcessFilterOptions.Maltose, lowLimit, highLimit),
-            "Maltotriosis" => new ProcessFilterRequest(ProcessFilterOptions.Maltotriosis, lowLimit, highLimit),
-            "Sugar" => new ProcessFilterRequest(ProcessFilterOptions.Sugar, lowLimit, highLimit),
-            "DeadYeast" => new ProcessFilterRequest(ProcessFilterOptions.DeadYeast, lowLimit, highLimit),
-            "ActiveYeast" => new ProcessFilterRequest(ProcessFilterOptions.ActiveYeast, lowLimit, highLimit),
-            "LatticeYeast" => new ProcessFilterRequest(ProcessFilterOptions.LatticeYeast, lowLimit, highLimit),
-            "Ethanol" => new ProcessFilterRequest(ProcessFilterOptions.Ethanol, lowLimit, highLimit),
-            _ => throw new ArgumentOutOfRangeException(nameof(filterSelectedValue))
+            "Date" => x => x.Date >= _datePickerFrom && x.Date <= _datePickerTo,
+            "Temperature" => x => x.Temperature >= _lowLimit && x.Temperature <= _highLimit,
+            "AmbientTemperature" => x => x.AmbientTemperature >= _lowLimit && x.AmbientTemperature <= _highLimit,
+            "Glucose" => x => x.Glucose >= _lowLimit && x.Glucose <= _highLimit,
+            "Maltose" => x => x.Maltose >= _lowLimit && x.Maltose <= _highLimit,
+            "Maltotriosis" => x => x.Maltotriosis >= _lowLimit && x.Maltotriosis <= _highLimit,
+            "Sugar" => x => x.Sugar >= _lowLimit && x.Sugar <= _highLimit,
+            "DeadYeast" => x => x.DeadYeast >= _lowLimit && x.DeadYeast <= _highLimit,
+            "ActiveYeast" => x => x.ActiveYeast >= _lowLimit && x.ActiveYeast <= _highLimit,
+            "LatticeYeast" => x => x.LatticeYeast >= _lowLimit && x.LatticeYeast <= _highLimit,
+            "Ethanol" => x => x.Ethanol >= _lowLimit && x.Ethanol <= _highLimit,
+            _ => x => x == x
             };
 
-        if (filterRequest is not null)
-            processListFiltered = await ProcessStore.GetFilteredProcess(filterRequest);
+        _processList = await ProcessStore.GetWithFilter(expression);
     }
 
 }

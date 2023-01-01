@@ -11,7 +11,7 @@ public static class Registration
     {
         var connectionString = configuration.GetConnectionString("MyConnection");
 
-        services.AddSingleton<ProcessStore>();
+        services.AddSingleton<IProcessStore, ProcessStore>();
         services.AddHostedService<ProcessMonitor>();
         services.AddDbContext<S7plcSqlContext>((sp, options) => { options.UseSqlServer(connectionString); });
 
