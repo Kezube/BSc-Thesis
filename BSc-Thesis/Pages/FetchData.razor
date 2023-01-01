@@ -12,8 +12,7 @@
             TextField="@(item => item)"
             ValueField="@(item => item)"
             DefaultItemText="Filtr"
-            SelectedValueChanged="GetFilteredProcess"
-            SelectedValue="_filterSelectedValue"/>
+            SelectedValueChanged="GetFilteredProcess"/>
 
 
 @switch (_filterSelectedValue)
@@ -31,10 +30,10 @@
     case "Date":
         <DatePicker TValue="DateTime?"
                     DateChanged="OnSelectedDateFrom"
-                    Date="DateTime.MinValue"/>
+                    Date=_datePickerFrom/>
         <DatePicker TValue="DateTime?"
                     DateChanged="OnSelectedDateTo"
-                    Date="DateTime.MaxValue"/>
+                    Date=_datePickerTo/>
         break;
     case "Filtr":
     case null:
@@ -94,6 +93,8 @@
         _columneNames = GetColumneNames();
         _processList = await ProcessStore.GetAll();
         _processCout = await GetProcessCout();
+        _datePickerFrom = new DateTime(2022, 12, 1); ;
+        _datePickerTo = new DateTime(2023, 12, 31); ;
 
         await base.OnInitializedAsync();
     }
@@ -121,7 +122,7 @@
         if (_highLimit <= _lowLimit)
             _highLimit = _lowLimit + 1;
 
-        await GetFilteredProcess();
+        await GetFilteredProcess(_filterSelectedValue);
     }
 
     private async Task OnSelectedNumHigh(double value)
@@ -130,29 +131,30 @@
         if (_lowLimit >= _highLimit)
             _lowLimit = _highLimit - 1;
 
-        await GetFilteredProcess();
+        await GetFilteredProcess(_filterSelectedValue);
     }
 
     private async Task OnSelectedDateFrom(DateTime? value)
     {
         _datePickerFrom = value;
-        await GetFilteredProcess();
+        await GetFilteredProcess(_filterSelectedValue);
     }
 
     private async Task OnSelectedDateTo(DateTime? value)
     {
         _datePickerTo = value;
-        await GetFilteredProcess();
+        await GetFilteredProcess(_filterSelectedValue);
     }
 
     private async Task OnSelectedID(int value)
     {
         _selectedId = value;
-        await GetFilteredProcess();
+        await GetFilteredProcess(_filterSelectedValue);
     }
 
-    private async Task GetFilteredProcess()
+    private async Task GetFilteredProcess(string value)
     {
+        _filterSelectedValue = value;
         if (_filterSelectedValue == "ID")
         {
             _processList = await ProcessStore.GetByID(_selectedId);
