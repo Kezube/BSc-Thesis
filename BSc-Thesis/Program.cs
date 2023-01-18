@@ -2,7 +2,6 @@ using System.Reflection;
 using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
-using BSc_Thesis.Data;
 using BSc_Thesis.DataBase;
 using MediatR;
 using MediatR.Courier.DependencyInjection;
@@ -14,7 +13,6 @@ var configuarion = builder.Configuration;
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddDatabase(configuarion);
 
 
