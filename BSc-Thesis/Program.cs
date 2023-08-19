@@ -26,6 +26,7 @@ builder.Services.AddMediatR(assemblies.ToArray());
 builder.Services.AddCourier(assemblies.ToArray());
 
 
+
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
 
